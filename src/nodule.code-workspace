@@ -1,0 +1,14 @@
+{
+	"folders": [
+		{
+			"path": "../.."
+		},
+		{
+			"path": "../../../../rfid_test"
+		},
+		{
+			"path": "../../../../level3_ws/src"
+		}
+	],
+	"settings": {}
+}
