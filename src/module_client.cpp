@@ -385,16 +385,34 @@ private:
         if(request->command == "read")
         {
             send_goal_read();
-            while(!goal_complete);
-            response->response = goal_response;
-            
-            if(goal_response)
+            auto start = std::chrono::high_resolution_clock::now();
+            bool timer = true;
+            while(!goal_complete)
             {
-                std::copy(read_data.begin(),read_data.end(),response->data_read.begin());
-                std::copy(read_epc.begin(),read_epc.end(),response->epc_read.begin());
+               auto finish = std::chrono::high_resolution_clock::now();
+               std::chrono::duration<double> time_elapsed = finish - start;
+               if(time_elapsed.count() > 10.0) 
+               {
+                    timer = false;
+                    break;
+               }
+            };
+            if(timer)
+            {
+                response->response = goal_response;
+                if(goal_response)
+                {
+                    std::copy(read_data.begin(),read_data.end(),response->data_read.begin());
+                    std::copy(read_epc.begin(),read_epc.end(),response->epc_read.begin());
+                }
+            }
+            else
+            {
+                response->response = false;
             }
             goal_complete = false;
             goal_response = false;
+            
         }
         else if(request->command == "write")
         {
@@ -406,12 +424,31 @@ private:
             std::copy(request_data.begin(),request_data.end(),write_data.begin());
 
             send_goal_write(write_data,write_data_size);
-            while(!goal_complete);
-            response->response = goal_response;
-
-            if(goal_response)
+            auto start = std::chrono::high_resolution_clock::now();
+            bool timer = true;
+            while(!goal_complete)
             {
-                std::copy(write_epc.begin(),write_epc.end(),response->epc_write.begin());
+               auto finish = std::chrono::high_resolution_clock::now();
+               std::chrono::duration<double> time_elapsed = finish - start;
+               if(time_elapsed.count() > 10.0)
+               {
+                    timer = false;
+                    break;
+               } 
+            };
+
+            if(timer)
+            {
+                response->response = goal_response;
+
+                if(goal_response)
+                {
+                    std::copy(write_epc.begin(),write_epc.end(),response->epc_write.begin());
+                }
+            }
+            else
+            {
+                response->response = false;
             }
             goal_complete = false;
             goal_response = false;
@@ -420,26 +457,63 @@ private:
         else if(request->command == "single")
         {
             send_goal_single();
-            while(!goal_complete);
-            response->response = goal_response;
-
-            if(goal_response)
+            auto start = std::chrono::high_resolution_clock::now();
+            bool timer = true;
+            while(!goal_complete)
             {
-                std::copy(single_epc.begin(),single_epc.end(),response->single_poll_epc.begin());
+               auto finish = std::chrono::high_resolution_clock::now();
+               std::chrono::duration<double> time_elapsed = finish - start;
+               if(time_elapsed.count() > 10.0) 
+               {
+                    timer = false;
+                    break;
+               }
+            };
+            if(timer)
+            {
+                response->response = goal_response;
+                if(goal_response)
+                {
+                    std::copy(single_epc.begin(),single_epc.end(),response->single_poll_epc.begin());
+                }
             }
+            else
+            {
+                response->response = false;
+            }
+            
             goal_complete = false;
             goal_response = false;
         }
         else
         {
             send_goal_multi();
-            while(!goal_complete);
-            response->response = goal_response;
-
-            if(goal_response)
+            auto start = std::chrono::high_resolution_clock::now();
+            bool timer = true;
+            while(!goal_complete)
             {
-                std::copy(multi_epc.begin(),multi_epc.end(),response->multi_poll_epc.begin());
-                response->multi_epc_size = static_cast<int>(multi_epc.size());
+               auto finish = std::chrono::high_resolution_clock::now();
+               std::chrono::duration<double> time_elapsed = finish - start;
+               if(time_elapsed.count() > 10.0)
+               {
+                    timer = false;
+                    break;
+                }
+            };
+
+            if(timer)
+            {
+                response->response = goal_response;
+
+                if(goal_response)
+                {
+                    std::copy(multi_epc.begin(),multi_epc.end(),response->multi_poll_epc.begin());
+                    response->multi_epc_size = static_cast<int>(multi_epc.size());
+                }
+            }
+            else
+            {
+                response->response = false;
             }
             goal_complete = false;
             goal_response = false;

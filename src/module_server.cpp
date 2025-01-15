@@ -153,13 +153,23 @@ private:
             try
             {
                 epc = single_poll();
-                assert(epc != nullptr); 
-                std::cout<<"ROS2 EPC return value assertion passed"<<std::endl;
-                std::copy(epc, epc + EPC_SIZE,result->single_inventory_epc.begin());
-                result->response = true;
-                feedback->progress = "Single Inventory Success";
-                goal_handle->publish_feedback(feedback);
-                goal_handle->succeed(result);
+                // assert(epc != nullptr); 
+                if(epc)
+                {
+                    std::copy(epc, epc + EPC_SIZE,result->single_inventory_epc.begin());
+                    result->response = true;
+                    feedback->progress = "Single Inventory Success";
+                    goal_handle->publish_feedback(feedback);
+                    goal_handle->succeed(result);
+                }
+                else
+                {
+                    result->response = false;
+                    feedback->progress = "Single Inventory Failed";
+                    goal_handle->publish_feedback(feedback);
+                    goal_handle->succeed(result);
+                }
+                
             }
             catch(const std::exception& e)
             {
