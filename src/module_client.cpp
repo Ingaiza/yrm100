@@ -81,7 +81,15 @@ public:
         options.feedback_callback = 
                 std::bind(&ModuleClientNode::goal_feedback_callback, this, _1, _2);
 
-
+        std::cout<<"WRITE DATA VALUES WHEN SENDING ACTION REQUEST: "<<"\n";
+        for (size_t i = 0; i < write_data.size(); i++) {
+            std::cout << std::hex 
+                    << std::uppercase 
+                    << std::setw(2) 
+                    << std::setfill('0')
+                    << static_cast<int>(write_data[i])
+                    << " ";
+        }
         // Send goal
         RCLCPP_INFO(this->get_logger(), "Sending Goal");
         module_client->async_send_goal(goal, options);

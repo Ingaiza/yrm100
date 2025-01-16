@@ -1,6 +1,7 @@
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
+#include "hextostring.hpp"
 
 #include "rclcpp/rclcpp.hpp"
 #include "my_rfid_interfaces/srv/command_service.hpp"
@@ -35,6 +36,15 @@ public:
         if(command == "write")
         {
             write_data.resize(16);
+            std::cout<<"WRITE DATA VALUES WHEN SENDING REQUEST: "<<"\n";
+            for (size_t i = 0; i < write_data.size(); i++) {
+                std::cout << std::hex 
+                        << std::uppercase 
+                        << std::setw(2) 
+                        << std::setfill('0')
+                        << static_cast<int>(write_data[i])
+                        << " ";
+            }
             std::copy(write_data.begin(),write_data.end(),request->data_write.begin());
         }
 
@@ -167,6 +177,18 @@ public:
                     }
                     std::cout << std::dec << std::endl;
 
+                    // auto chunks = HexChunkProcessor::processHexChunks(multi_epc);
+                    // for (size_t i = 0; i < chunks.size(); ++i) {
+                    //     std::cout << "Chunk " << (i + 1) << " (12 bytes): " << chunks[i] << "\n";
+                        
+                    //     // Print formatted bytes
+                    //     std::cout << "Formatted bytes: ";
+                    //     for (size_t j = 0; j < chunks[i].length(); j += 2) {
+                    //         if (j > 0) std::cout << " ";
+                    //         std::cout << chunks[i].substr(j, 2);
+                    //     }
+                    //     std::cout << "\n\n";
+                    // }
 
                 }
                 else
@@ -236,10 +258,23 @@ public:
         ImGui::SetCursorPosX(620.0f);
         ImGui::SetNextItemWidth(200.0f);
         write_data.resize(16);
-        if(ImGui::InputText("WRITE DATA", buf , IM_ARRAYSIZE(buf), ImGuiInputTextFlags_CharsUppercase))
+
+        if (ImGui::InputText("WRITE DATA", buf, IM_ARRAYSIZE(buf),ImGuiInputTextFlags_CharsUppercase | ImGuiInputTextFlags_CharsHexadecimal)) 
         {
             ConvertHexStringToBytes(buf, write_data);
+            
+            std::cout << "Converted bytes: ";
+            for (size_t i = 0; i < write_data.size(); i++) {
+                std::cout << std::hex 
+                        << std::uppercase 
+                        << std::setw(2) 
+                        << std::setfill('0')
+                        << static_cast<int>(write_data[i])
+                        << " ";
+            }
+            std::cout << std::endl;
         }
+        
         ImGui::SetCursorPosY(35.0f);
         ImGui::SetCursorPosX(500.0f);
         if(ImGui::Button("WRITE", ImVec2(75,75)))
@@ -282,17 +317,68 @@ public:
 
         ImGui::SetCursorPosY(startY);
         ImGui::SetCursorPosX(620.0f);
+
+        // multi epc processing
+        // auto chunks = HexChunkProcessor::processHexChunks(multi_epc);
+        // for (size_t i = 0; i < chunks.size(); ++i) {
+        //     std::cout << "Chunk " << (i + 1) << " (12 bytes): " << chunks[i] << "\n";
+            
+        //     // Print formatted bytes
+        //     std::cout << "Formatted bytes: ";
+        //     for (size_t j = 0; j < chunks[i].length(); j += 2) {
+        //         if (j > 0) std::cout << " ";
+        //         std::cout << chunks[i].substr(j, 2);
+        //     }
+        //     std::cout << "\n\n";
+        // }
+
         ImGui::BeginGroup();
         {
-            ImGui::Text("EPC 1: ");
-            ImGui::SetCursorPosY(startY + lineSpacing);
-            ImGui::Text("EPC 2: ");
-            ImGui::SetCursorPosY(startY + lineSpacing * 2);
-            ImGui::Text("EPC 3: ");
-            ImGui::SetCursorPosY(startY + lineSpacing * 3);
-            ImGui::Text("EPC 4: ");
-            ImGui::SetCursorPosY(startY + lineSpacing * 4);
-            ImGui::Text("EPC 5: ");
+            
+            if (!multi_epc.empty()) {
+                auto chunks = HexChunkProcessor::processHexChunksNonDestructive(multi_epc);
+                for (size_t i = 0; i < chunks.size(); ++i) 
+                {                
+                    // Set position for each new line
+                    ImGui::SetCursorPosX(620.0f);
+                    ImGui::SetCursorPosY(startY + (i * lineSpacing));
+                    
+                    // Print EPC number
+                    ImGui::Text("EPC %zu:", i + 1);
+                    
+                    // Print each byte with spacing
+                    for (size_t j = 0; j < chunks[i].length(); j += 2) 
+                    {
+                        ImGui::SameLine();
+                        ImGui::Text("%s", chunks[i].substr(j, 2).c_str());
+                    }
+                }
+            } else {
+                ImGui::SetCursorPosX(620.0f);
+                ImGui::Text("No EPCs detected");
+            }
+            // auto chunks = HexChunkProcessor::processHexChunks(multi_epc);
+            // for (size_t i = 0; i < chunks.size(); ++i) 
+            // {                
+            //     // Print formatted bytes
+            //     ImGui::Text("EPC %d: ",i+1);
+            //     for (size_t j = 0; j < chunks[i].length(); j += 2) 
+            //     {
+            //         ImGui::SameLine();
+            //         ImGui::Text(" ");
+            //         ImGui::Text("%s", chunks[i].substr(j, 2));
+            //     }
+            //     ImGui::SetCursorPosY(startY + lineSpacing);
+            // }
+            // ImGui::Text("EPC 1: ");
+            // ImGui::SetCursorPosY(startY + lineSpacing);
+            // ImGui::Text("EPC 2: ");
+            // ImGui::SetCursorPosY(startY + lineSpacing * 2);
+            // ImGui::Text("EPC 3: ");
+            // ImGui::SetCursorPosY(startY + lineSpacing * 3);
+            // ImGui::Text("EPC 4: ");
+            // ImGui::SetCursorPosY(startY + lineSpacing * 4);
+            // ImGui::Text("EPC 5: ");
         }
         ImGui::EndGroup();
         ImGui::SetCursorPosY(310.0f);
@@ -309,34 +395,24 @@ public:
     void ConvertHexStringToBytes(const char* hexString, std::vector<uint8_t>& bytes) 
     {
         std::string str(hexString);
-        std::stringstream ss(str);
-        std::string token;
-        size_t index = 0;
-        
         bytes.clear();
-        bytes.resize(16, 0);  
+        bytes.resize(16, 0);  // Initialize with zeros
         
-        try 
-        {
-            while (std::getline(ss, token, ',') && index < bytes.size()) 
-            {
-                // Remove spaces and "0x" prefix if present
-                token.erase(remove_if(token.begin(), token.end(), isspace), token.end());
-                if (token.substr(0, 2) == "0x") 
-                {
-                    token = token.substr(2);
-                }
-                
-                // Only convert if we have valid data
-                if (!token.empty()) 
-                {
-                    bytes[index++] = static_cast<uint8_t>(std::stoi(token, nullptr, 16));
-                }
+        // Remove spaces and other non-hex characters
+        str.erase(remove_if(str.begin(), str.end(), 
+            [](char c) { return !isxdigit(c); }), str.end());
+        
+        // Process pairs of hex digits
+        size_t index = 0;
+        for (size_t i = 0; i < str.length() - 1 && index < bytes.size(); i += 2) {
+            try {
+                std::string byteStr = str.substr(i, 2);
+                bytes[index++] = static_cast<uint8_t>(std::stoi(byteStr, nullptr, 16));
             }
-        } 
-        catch (const std::exception& e) 
-        {
-            std::cerr << "Conversion error: " << e.what() << std::endl;
+            catch (const std::exception& e) {
+                std::cerr << "Conversion error at index " << i << ": " << e.what() << std::endl;
+                break;
+            }
         }
     }
 
@@ -351,7 +427,7 @@ private:
     std::vector<uint8_t> write_data;
     bool success;
     bool window_open = true;
-    char buf[128];
+    char buf[64] = "";
 };
 
 static void glfw_error_callback(int error , const char* description)

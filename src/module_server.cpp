@@ -125,7 +125,25 @@ private:
             uint8_t* epc;
             uint8_t data[16];
             auto goal_data = goal_handle->get_goal()->write_data;
+            std::cout<<"GOAL DATA RECEIVED IN ACTION SERVER: "<<"\n";
+            for (size_t i = 0; i < goal_data.size(); i++) {
+                std::cout << std::hex 
+                        << std::uppercase 
+                        << std::setw(2) 
+                        << std::setfill('0')
+                        << static_cast<int>(goal_data[i])
+                        << " ";
+            }
             std::copy(goal_data.begin(),goal_data.end(),data);
+            std::cout<<"DATA BUFFER AFTER COPY FROM GOAL DATA: "<<"\n";
+            for (size_t i = 0; i < goal_data.size(); i++) {
+                std::cout << std::hex 
+                        << std::uppercase 
+                        << std::setw(2) 
+                        << std::setfill('0')
+                        << static_cast<int>(goal_data[i])
+                        << " ";
+            }
             try
             {
                 epc = write_tag(data);

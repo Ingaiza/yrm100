@@ -212,7 +212,7 @@ size_t UHFSerial::send_wait(const uint8_t* data, size_t size, uint8_t* response_
     }
 
     std::memcpy(response_framed_, buffer_framed_, buffer_framed_size_);
-    std::cout<<"Send Wait Completed"<<std::endl;
+    // std::cout<<"Send Wait Completed"<<std::endl;
     return buffer_framed_size_;
 }
 

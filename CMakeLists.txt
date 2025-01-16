@@ -52,7 +52,10 @@ add_executable(module_server
 
 add_executable(module_client src/module_client.cpp)
 
-add_executable(command_client src/command_client.cpp)
+add_executable(command_client 
+src/command_client.cpp 
+src/hextostring.cpp
+)
 
 # Link command_client with all necessary libraries
 target_link_libraries(command_client

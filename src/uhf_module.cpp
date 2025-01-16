@@ -10,7 +10,7 @@
 #define WAIT_TICK 4000 // max wait time in between each byte
 
 static M100ResponseType setup_and_send_rx(M100Module* module, uint8_t* cmd, size_t cmd_length) {
-    std::cout<<"Initiallizing setup_and_send_rx"<<std::endl;
+    // std::cout<<"Initiallizing setup_and_send_rx"<<std::endl;
 
     if (!module || !module->serial || !module->serial->buffer_) 
     {
@@ -18,7 +18,7 @@ static M100ResponseType setup_and_send_rx(M100Module* module, uint8_t* cmd, size
         return M100ValidationFail;
     }
     // printf("module is valid");
-    std::cout<<"module is valid"<<std::endl;
+    // std::cout<<"module is valid"<<std::endl;
     // clear buffer
     if(!module->serial->buffer_->multi)
     {
@@ -45,7 +45,7 @@ static M100ResponseType setup_and_send_rx(M100Module* module, uint8_t* cmd, size
         std::cout<<"Checksum failed in setup_and_send_rx"<<std::endl;
         return M100ChecksumFail;
     }
-    std::cout<<"Setup and send rx completed "<<std::endl;
+    // std::cout<<"Setup and send rx completed "<<std::endl;
     return M100SuccessResponse;
 }
 
@@ -278,14 +278,14 @@ M100Module* m100_module_alloc(UHFSerial* serial) {
 }
 
 void m100_module_free(M100Module* module) {
-    std::cout<<"Starting module free"<<std::endl;
+    // std::cout<<"Starting module free"<<std::endl;
     // m100_module_info_free(module->info);
     // std::cout<<"module->info free success"<<std::endl;
     // module->serial->stop();
     // std::cout<<"module->serial->stop() success"<<std::endl;
     // uhf_serial_free(module->serial);
     free(module);
-    std::cout<<"free(module) success"<<std::endl;
+    // std::cout<<"free(module) success"<<std::endl;
 }
 
 uint8_t checksum(const uint8_t* data, size_t length) {
