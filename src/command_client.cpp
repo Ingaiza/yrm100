@@ -396,9 +396,9 @@ public:
     {
         std::string str(hexString);
         bytes.clear();
-        bytes.resize(16, 0);  // Initialize with zeros
+        bytes.resize(16, 0);  
         
-        // Remove spaces and other non-hex characters
+        
         str.erase(remove_if(str.begin(), str.end(), 
             [](char c) { return !isxdigit(c); }), str.end());
         

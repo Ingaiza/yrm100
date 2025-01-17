@@ -2,6 +2,10 @@
 #include "rclcpp_action/rclcpp_action.hpp"
 #include "my_rfid_interfaces/action/module_worker.hpp"
 #include "my_rfid_interfaces/srv/command_service.hpp"
+#include "/home/ingaiza/yrm_module/src/yrm100/include/yrm100/inventory.hpp"
+#include <iostream>
+#include <fstream>
+#include <filesystem>
 
 using ModuleWorker = my_rfid_interfaces::action::ModuleWorker;
 using ModuleWorkerGoalHandle = rclcpp_action::ClientGoalHandle<ModuleWorker>;
@@ -226,7 +230,7 @@ private:
                             << " ";                                                                                                                                                                                                   // Space between bytes
                 }
                 std::cout << std::dec << std::endl;
-
+                read_inventory();
                 goal_complete = true;
                 goal_response = true;
             }
@@ -527,6 +531,85 @@ private:
             goal_response = false;
         }
     }
+
+    void read_inventory()
+    {   
+        std::string basePath = "/home/ingaiza/aimbot_inventory/Inventory";
+        std::string name;
+        int j = 0;
+        bool check = true;
+
+        while(check) {
+            std::cout << "J value: " << j << "\n";
+            
+            name = basePath + std::to_string(j) + ".txt";
+            std::cout << "Checking file: " << name << "\n";
+            
+            if(std::filesystem::exists(name)) {
+                std::cout << "File exists\n";
+                j++;
+            } else {
+                std::cout << "File doesn't exist\n";
+                check = false;
+            }
+        }
+        std::ofstream readfile(name); 
+        RFIDDataMemory read;
+        read.data = read_data;
+        uint16_t location = read.getLocation();
+        uint16_t product_category = read.getProductCategory();
+        auto status = read.getStatus();
+        uint8_t quantity = read.getQuantity();
+        uint16_t price = read.getPrice();
+        uint16_t supplier_id = read.getSupplierId();
+        uint16_t batch_number = read.getBatchNumber();
+        auto date = read.getDate();
+
+        std::cout<<"Date: "<<date.tm_mday<<"/"<<date.tm_mon+1<<"/"<<date.tm_year+1900<<"\n";
+        std::cout<<"Product Category: "<<product_category<<"\n";
+        std::cout<<"Quantity(in Units): "<<quantity<<"\n";
+        std::cout<<"Price: "<<price<<"\n";
+        std::cout<<"Location: "<<location<<"\n";
+        std::cout<<"Supplier ID: "<<supplier_id<<"\n";
+        std::cout<<"Batch Number: "<<batch_number<<"\n";
+        std::cout<<"Status: "<<(status.inStock ? "In Stock" : "Out of Stock")<<"\n";
+
+        std::time_t t = time(0);
+        std::tm* now = std::localtime(&t);
+
+        if(readfile.is_open())
+        {
+            readfile << "AIMBOT READ INVENTORY.\n";
+            readfile << "  \n";
+            readfile << "Inventory Timestamp: "<<now->tm_mday<<"/"<<now->tm_mon+1<<"/"<<now->tm_year+1900<<" "<<now->tm_hour<<":"<<now->tm_min<<":"<<now->tm_sec<<"\n";
+            readfile << "  \n";
+            readfile << "PRODUCT PARAMETERS\n";
+            readfile << "  \n";
+            readfile << "Date: "<<date.tm_mday<<"/"<<date.tm_mon+1<<"/"<<date.tm_year+1900<<"\n";
+            readfile << "  \n";
+            readfile << "Product Category: "<<product_category<<"\n";
+            readfile << "  \n";
+            readfile << "Quantity(in Units): "<<quantity<<"\n";
+            readfile << "  \n";
+            readfile << "Price: "<<price<<"\n";
+            readfile << "  \n";
+            readfile << "Location: "<<location<<"\n";
+            readfile << "  \n";
+            readfile << "Supplier ID: "<<supplier_id<<"\n";
+            readfile << "  \n";
+            readfile << "Batch Number: "<<batch_number<<"\n";
+            readfile << "  \n";
+            readfile << "Status: "<<(status.inStock ? "In Stock" : "Out of Stock")<<"\n";
+
+            readfile.close();
+        }
+        else
+        {
+            std::cout<<"ERROR: Unable to create file\n";
+        }
+
+    }
+
 
     rclcpp_action::Client<ModuleWorker>::SharedPtr module_client;
     rclcpp::Service<my_rfid_interfaces::srv::CommandService>::SharedPtr command_server_;
