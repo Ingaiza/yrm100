@@ -160,11 +160,12 @@ uint8_t* read_select(uint8_t* read_data)
     {
         assert(read_data != nullptr);
         std::cout<<"read_data assertion passed"<<std::endl;
-        uint8_t* data = uhf_tag_get_user(uhf_tag);
-        assert(data != nullptr);
+        std::vector<uint8_t> data = uhf_tag_get_user(uhf_tag);
+        assert(!data.empty());
         std::cout<<"data assertion passed"<<std::endl;
         size_t length = uhf_tag_get_user_size(uhf_tag);
-        std::memcpy(read_data,data,length);
+        // std::memcpy(read_data,data,length);
+        std::copy(data.begin(), data.end(), read_data);
         uint8_t* epc_data = uhf_tag_get_epc(uhf_tag);
         assert(epc_data != nullptr);
         std::cout<<"epc_data assertion passed"<<std::endl;
@@ -204,7 +205,7 @@ uint8_t* read_select(uint8_t* read_data)
     }
 }
 
-uint8_t* write_tag(uint8_t* write_data)
+uint8_t* write_tag(std::vector<uint8_t> write_data)
 {
     UHFSerial* serial = new UHFSerial("/dev/ttyUSB0");
     DEFAULT_PARAMS_ PARAMS_ ;
@@ -261,12 +262,17 @@ uint8_t* write_tag(uint8_t* write_data)
 
     // save uhf_tag data
     UHFTag* saved_tag_ = uhf_tag;
-    uint8_t* user_data_;
+    std::vector<uint8_t> user_data_;
+    user_data_.resize(16);
     size_t user_data_size_;
     user_data_size_ = sizeof(write_data);
-    std::memcpy(user_data_,write_data,user_data_size_);
-    
+    std::cout<<"Starting memcpy .....\n";
+    // printf("Starting memcpy....");
+    // std::memcpy(user_data_,write_data,user_data_size_);
+    std::copy(write_data.begin(),write_data.end(),user_data_.begin());
     // set user data in saved_tag_
+    // printf("setting user....");
+    std::cout<<"Setting user .....\n";
     uhf_tag_set_user(saved_tag_,user_data_,user_data_size_);
     uhf_tag_set_user_size(saved_tag_,user_data_size_);
 
@@ -275,7 +281,12 @@ uint8_t* write_tag(uint8_t* write_data)
 
     if(set_select_response_ == M100SuccessResponse)
     {
+        // printf("Starting write....");
+        std::cout<<"Starting write .....\n";
         write_tag_response_ = m100_write_label_data_storage(module,saved_tag_,uhf_tag,UserBank,PARAMS_.SOURCE_ADDR_,PARAMS_.ACCESS_PSWD_);
+        std::cout<<"write complete .....\n";
+        // printf("write complete....");
+
     }
 
     if(write_tag_response_ == M100SuccessResponse)

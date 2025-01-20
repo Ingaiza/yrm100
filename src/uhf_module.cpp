@@ -604,11 +604,15 @@ M100ResponseType m100_read_label_data_storage(
 
     size_t ptr_offset = 5 /*<-ptr offset*/ + uhf_tag_get_epc_size(uhf_tag) + 3 /*<-pc + ul*/;
     size_t bank_data_length = payload_len - (ptr_offset - 5 /*dont include the offset*/);
+    std::vector<uint8_t> read_data;
+    read_data.resize(bank_data_length);
+    std::copy(data + ptr_offset, data + ptr_offset + bank_data_length, read_data.begin());
 
     if(bank == TIDBank) {
         uhf_tag_set_tid(uhf_tag, data + ptr_offset, bank_data_length);
     } else if(bank == UserBank) {
-        uhf_tag_set_user(uhf_tag, data + ptr_offset, bank_data_length);
+        // uhf_tag_set_user(uhf_tag, data + ptr_offset, bank_data_length);
+        uhf_tag_set_user(uhf_tag, read_data, bank_data_length);
     }
     std::cout<<"Received Tag Data size: "<<bank_data_length<<std::endl;
 
@@ -648,7 +652,14 @@ M100ResponseType m100_write_label_data_storage(
         payload_len += uhf_tag_get_user_size(saved_tag);
         data_length = uhf_tag_get_user_size(saved_tag);
         // set data
-        memcpy(cmd + 14, uhf_tag_get_user(saved_tag), uhf_tag_get_user_size(saved_tag));
+        std::cout<<"Starting userbank_data init .....\n";
+        std::vector<uint8_t> userbank_data;
+        userbank_data.resize(uhf_tag_get_user_size(saved_tag));
+        userbank_data = uhf_tag_get_user(saved_tag);
+        std::cout<<"Starting std::copy in m100_write UserBank .....\n";
+        // memcpy(cmd + 14, uhf_tag_get_user(saved_tag), uhf_tag_get_user_size(saved_tag));
+        std::copy(userbank_data.begin(),userbank_data.end(), cmd + 14);
+        std::cout<<"Copy complete .....\n";
     }
     // set payload length
     cmd[3] = (payload_len >> 8) & 0xFF;

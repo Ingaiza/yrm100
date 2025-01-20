@@ -326,7 +326,6 @@ public:
                     auto chunks = HexChunkProcessor::processHexChunksNonDestructive(multi_epc);
                     for (size_t i = 0; i < chunks.size(); ++i) 
                     {                
-                        // Set position for each new line
                         ImGui::SetCursorPosX(620.0f);
                         ImGui::SetCursorPosY(startY + (i * lineSpacing));
                         
@@ -681,7 +680,6 @@ int main(int argc, char **argv)
     {
         rclcpp::spin_some(node);
 
-        //ImGui Frame Initialization
         glfwPollEvents();
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
@@ -690,7 +688,6 @@ int main(int argc, char **argv)
         node->render_imgui_window();
         node->render_new_window();
 
-        // render the user interface window
         ImGui::Render();
         int display_w, display_h;
         glfwGetFramebufferSize(window, &display_w, &display_h);

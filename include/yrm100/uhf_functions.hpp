@@ -22,7 +22,7 @@ struct DEFAULT_PARAMS_
 uint8_t* single_poll();
 // uint8_t* read(uint8_t* read_data);
 uint8_t* read_select(uint8_t* read_data);
-uint8_t* write_tag(uint8_t* write_data);
+uint8_t* write_tag(std::vector<uint8_t> write_data);
 std::optional<std::vector<uint8_t>> multi_poll();
 
 #endif

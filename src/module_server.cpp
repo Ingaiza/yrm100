@@ -123,8 +123,10 @@ private:
             auto result = std::make_shared<ModuleWorker::Result>();
             auto feedback = std::make_shared<ModuleWorker::Feedback>();
             uint8_t* epc;
-            uint8_t data[16];
+            // uint8_t data[16];
+            std::vector<uint8_t> data;
             auto goal_data = goal_handle->get_goal()->write_data;
+            data.resize(16);
             std::cout<<"GOAL DATA RECEIVED IN ACTION SERVER: "<<"\n";
             for (size_t i = 0; i < goal_data.size(); i++) {
                 std::cout << std::hex 
@@ -134,7 +136,7 @@ private:
                         << static_cast<int>(goal_data[i])
                         << " ";
             }
-            std::copy(goal_data.begin(),goal_data.end(),data);
+            std::copy(goal_data.begin(),goal_data.end(),data.begin());
             std::cout<<"DATA BUFFER AFTER COPY FROM GOAL DATA: "<<"\n";
             for (size_t i = 0; i < goal_data.size(); i++) {
                 std::cout << std::hex 

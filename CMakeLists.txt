@@ -50,7 +50,7 @@ add_executable(module_server
  src/uhf_tag.cpp
 )
 
-add_executable(module_client src/module_client.cpp src/inventory.cpp )
+add_executable(module_client src/module_client.cpp src/inventory.cpp src/hextostring.cpp)
 
 add_executable(command_client 
 src/command_client.cpp 

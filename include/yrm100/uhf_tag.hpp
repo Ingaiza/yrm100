@@ -3,6 +3,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <stddef.h>
+#include <vector>
 
 #define MAX_BANK_SIZE 200
 // storage enum
@@ -31,7 +32,9 @@ typedef struct {
 // User Memory Bank
 typedef struct {
     size_t size; // Size of user memory data
-    uint8_t data[MAX_BANK_SIZE]; // Assuming max 512 bits (64 bytes) for User Memory
+    // uint8_t data[MAX_BANK_SIZE]; // Assuming max 512 bits (64 bytes) for User Memory
+    std::vector<uint8_t> data;
+
 } UserMemoryBank;
 
 // EPC Gen 2 Tag containing all memory banks
@@ -62,7 +65,7 @@ void uhf_tag_set_epc(UHFTag* uhf_tag, uint8_t* data_in, size_t size);
 void uhf_tag_set_epc_size(UHFTag* uhf_tag, size_t size);
 void uhf_tag_set_tid(UHFTag* uhf_tag, uint8_t* data_in, size_t size);
 void uhf_tag_set_tid_size(UHFTag* uhf_tag, size_t size);
-void uhf_tag_set_user(UHFTag* uhf_tag, uint8_t* data_in, size_t size);
+void uhf_tag_set_user(UHFTag* uhf_tag, std::vector<uint8_t> data_in, size_t size);
 void uhf_tag_set_user_size(UHFTag* uhf_tag, size_t size);
 
 uint8_t* uhf_tag_get_kill_pwd(UHFTag* uhf_tag);
@@ -73,7 +76,8 @@ uint16_t uhf_tag_get_epc_crc(UHFTag* uhf_tag);
 size_t uhf_tag_get_epc_size(UHFTag* uhf_tag);
 uint8_t* uhf_tag_get_tid(UHFTag* uhf_tag);
 size_t uhf_tag_get_tid_size(UHFTag* uhf_tag);
-uint8_t* uhf_tag_get_user(UHFTag* uhf_tag);
+// std::vector<uint8_t> uhf_tag_get_user(UHFTag* uhf_tag);
+std::vector<uint8_t> uhf_tag_get_user(UHFTag* uhf_tag);
 size_t uhf_tag_get_user_size(UHFTag* uhf_tag);
 
 // debug

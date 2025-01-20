@@ -3,6 +3,7 @@
 #include "my_rfid_interfaces/action/module_worker.hpp"
 #include "my_rfid_interfaces/srv/command_service.hpp"
 #include "/home/ingaiza/yrm_module/src/yrm100/include/yrm100/inventory.hpp"
+#include "/home/ingaiza/yrm_module/src/yrm100/include/yrm100/hextostring.hpp"
 #include <iostream>
 #include <fstream>
 #include <filesystem>
@@ -11,8 +12,57 @@ using ModuleWorker = my_rfid_interfaces::action::ModuleWorker;
 using ModuleWorkerGoalHandle = rclcpp_action::ClientGoalHandle<ModuleWorker>;
 using namespace std::placeholders; 
 
-uint8_t WRITE_DATA[] = {0x99,0x88,0x77,0x66,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x55};
+std::string epc_file_name;
 
+
+std::string epc_name()
+{
+    std::string basePath = "/home/ingaiza/aimbot_inventory/epc_inventory";
+    std::string name;
+    int j = 0;
+    bool check = true;
+
+    while(check) 
+    {
+        std::cout << "J value: " << j << "\n";
+        
+        name = basePath + std::to_string(j) + ".txt";
+        std::cout << "Checking file: " << name << "\n";
+        
+        if(std::filesystem::exists(name)) {
+            std::cout << "File exists\n";
+            j++;
+        } else {
+            std::cout << "File doesn't exist\n";
+            check = false;
+        }
+    }
+    return name;
+}
+
+void create_epc_file()
+{
+    epc_file_name = epc_name();
+    std::ofstream epcfile(epc_file_name);
+    
+    std::time_t t = time(0);
+    std::tm* now = std::localtime(&t);
+
+    if (epcfile.is_open()) 
+    {
+        epcfile << "AIMBOT PRODUCT EPC INVENTORY\n";
+        epcfile << " \n";
+        epcfile << "Inventory Timestamp: "<<now->tm_mday<<"/"<<now->tm_mon+1<<"/"<<now->tm_year+1900<<" "
+                <<now->tm_hour<<":"<<now->tm_min<<":"<<now->tm_sec<<"\n";
+        epcfile << " \n";
+        epcfile.close();
+        std::cout << "File created and written successfully.\n";
+    } 
+    else 
+    {
+        std::cout << "Error: Unable to create file.\n";
+    }
+}
 
 class ModuleClientNode : public rclcpp::Node
 {
@@ -267,6 +317,7 @@ private:
                             << " ";                                                                                                                                                                                                   // Space between bytes
                 }
                 std::cout<<std::dec<<std::endl;
+                write_inventory();
                 goal_complete = true;
                 goal_response = true;
             }
@@ -304,6 +355,7 @@ private:
                             << " ";                                                                                                                                                                                                   // Space between bytes
                 }
                 std::cout << std::dec << std::endl;
+                epc_inventory(single_epc);
                 goal_complete = true;
                 goal_response = true;  
             }
@@ -354,7 +406,7 @@ private:
                             << " ";                                                                                                                                                                                                   // Space between bytes
                 }
                 std::cout << std::dec << std::endl;
-                
+                epc_inventory(multi_epc);
                 goal_complete = true;
                 goal_response = true; 
             }
@@ -431,9 +483,11 @@ private:
             size_t write_data_size = 16;
             std::vector<uint8_t> write_data;
             write_data.resize(write_data_size);
+            write_user_data.resize(write_data_size);
 
             auto request_data = request->data_write;
             std::copy(request_data.begin(),request_data.end(),write_data.begin());
+            std::copy(request_data.begin(),request_data.end(),write_user_data.begin());
 
             send_goal_write(write_data,write_data_size);
             auto start = std::chrono::high_resolution_clock::now();
@@ -534,12 +588,13 @@ private:
 
     void read_inventory()
     {   
-        std::string basePath = "/home/ingaiza/aimbot_inventory/Inventory";
+        std::string basePath = "/home/ingaiza/aimbot_inventory/read_inventory";
         std::string name;
         int j = 0;
         bool check = true;
 
-        while(check) {
+        while(check) 
+        {
             std::cout << "J value: " << j << "\n";
             
             name = basePath + std::to_string(j) + ".txt";
@@ -567,7 +622,7 @@ private:
 
         std::cout<<"Date: "<<date.tm_mday<<"/"<<date.tm_mon+1<<"/"<<date.tm_year+1900<<"\n";
         std::cout<<"Product Category: "<<product_category<<"\n";
-        std::cout<<"Quantity(in Units): "<<quantity<<"\n";
+        std::cout<<"Quantity(in Units): "<<static_cast<int>(quantity)<<"\n";
         std::cout<<"Price: "<<price<<"\n";
         std::cout<<"Location: "<<location<<"\n";
         std::cout<<"Supplier ID: "<<supplier_id<<"\n";
@@ -581,7 +636,8 @@ private:
         {
             readfile << "AIMBOT READ INVENTORY.\n";
             readfile << "  \n";
-            readfile << "Inventory Timestamp: "<<now->tm_mday<<"/"<<now->tm_mon+1<<"/"<<now->tm_year+1900<<" "<<now->tm_hour<<":"<<now->tm_min<<":"<<now->tm_sec<<"\n";
+            readfile << "Inventory Timestamp: "<<now->tm_mday<<"/"<<now->tm_mon+1<<"/"<<now->tm_year+1900<<" "
+                     <<now->tm_hour<<":"<<now->tm_min<<":"<<now->tm_sec<<"\n";
             readfile << "  \n";
             readfile << "PRODUCT PARAMETERS\n";
             readfile << "  \n";
@@ -589,7 +645,7 @@ private:
             readfile << "  \n";
             readfile << "Product Category: "<<product_category<<"\n";
             readfile << "  \n";
-            readfile << "Quantity(in Units): "<<quantity<<"\n";
+            readfile << "Quantity(in Units): "<<static_cast<int>(quantity)<<"\n";
             readfile << "  \n";
             readfile << "Price: "<<price<<"\n";
             readfile << "  \n";
@@ -610,6 +666,119 @@ private:
 
     }
 
+    void write_inventory()
+    {
+        std::string basePath = "/home/ingaiza/aimbot_inventory/write_inventory";
+        std::string name;
+        int j = 0;
+        bool check = true;
+
+        while(check) 
+        {
+            std::cout << "J value: " << j << "\n";
+            
+            name = basePath + std::to_string(j) + ".txt";
+            std::cout << "Checking file: " << name << "\n";
+            
+            if(std::filesystem::exists(name)) {
+                std::cout << "File exists\n";
+                j++;
+            } else {
+                std::cout << "File doesn't exist\n";
+                check = false;
+            }
+        }
+        std::ofstream writefile(name); 
+        RFIDDataMemory write;
+        write.data = write_user_data;
+        uint16_t location = write.getLocation();
+        uint16_t product_category = write.getProductCategory();
+        auto status = write.getStatus();
+        uint8_t quantity = write.getQuantity();
+        uint16_t price = write.getPrice();
+        uint16_t supplier_id = write.getSupplierId();
+        uint16_t batch_number = write.getBatchNumber();
+        auto date = write.getDate();
+
+        std::cout<<"Date: "<<date.tm_mday<<"/"<<date.tm_mon+1<<"/"<<date.tm_year+1900<<"\n";
+        std::cout<<"Product Category: "<<product_category<<"\n";
+        std::cout<<"Quantity(in Units): "<<static_cast<int>(quantity)<<"\n";
+        std::cout<<"Price: "<<price<<"\n";
+        std::cout<<"Location: "<<location<<"\n";
+        std::cout<<"Supplier ID: "<<supplier_id<<"\n";
+        std::cout<<"Batch Number: "<<batch_number<<"\n";
+        std::cout<<"Status: "<<(status.inStock ? "In Stock" : "Out of Stock")<<"\n";
+
+        std::time_t t = time(0);
+        std::tm* now = std::localtime(&t);
+
+        auto chunks = HexChunkProcessor::processHexChunksNonDestructive(write_epc);
+   
+        if(writefile.is_open())
+        {
+            writefile << "AIMBOT WRITE INVENTORY.\n";
+            writefile << "  \n";
+            for(size_t i = 0; i < chunks.size(); ++i)
+            {   
+                writefile <<"DATA WAS WRITTEN TO TAG WITH EPC: "<<chunks[i]<<"  | TIMESTAMP: "<<now->tm_mday<<"/"
+                            <<now->tm_mon+1<<"/"<<now->tm_year+1900<<" "<<now->tm_hour<<":"
+                            <<now->tm_min<<":"<<now->tm_sec<<"\n";
+                writefile <<" \n";
+            }
+            writefile << "  \n";
+            writefile << "Inventory Timestamp: "<<now->tm_mday<<"/"<<now->tm_mon+1<<"/"<<now->tm_year+1900<<" "
+                      <<now->tm_hour<<":"<<now->tm_min<<":"<<now->tm_sec<<"\n";
+            writefile << "  \n";
+            writefile << "PRODUCT PARAMETERS\n";
+            writefile << "  \n";
+            writefile << "Date: "<<date.tm_mday<<"/"<<date.tm_mon+1<<"/"<<date.tm_year+1900<<"\n";
+            writefile << "  \n";
+            writefile << "Product Category: "<<product_category<<"\n";
+            writefile << "  \n";
+            writefile << "Quantity(in Units): "<<static_cast<int>(quantity)<<"\n";
+            writefile << "  \n";
+            writefile << "Price: "<<price<<"\n";
+            writefile << "  \n";
+            writefile << "Location: "<<location<<"\n";
+            writefile << "  \n";
+            writefile << "Supplier ID: "<<supplier_id<<"\n";
+            writefile << "  \n";
+            writefile << "Batch Number: "<<batch_number<<"\n";
+            writefile << "  \n";
+            writefile << "Status: "<<(status.inStock ? "In Stock" : "Out of Stock")<<"\n";
+
+            writefile.close();
+        }
+        else
+        {
+            std::cout<<"ERROR: Unable to create file\n";
+        }
+    }
+
+    void epc_inventory(std::vector<uint8_t>epc_value)
+    {
+    
+        auto chunks = HexChunkProcessor::processHexChunksNonDestructive(epc_value);
+        std::ofstream appendfile(epc_file_name, std::ios::app);
+
+        std::time_t t = time(0);
+        std::tm* now = std::localtime(&t);
+
+        if(appendfile.is_open())
+        {
+            for(size_t i = 0; i < chunks.size(); ++i)
+            {   
+                appendfile <<"EPC CODE: "<<chunks[i]<<"  | TIMESTAMP: "<<now->tm_mday<<"/"
+                           <<now->tm_mon+1<<"/"<<now->tm_year+1900<<" "<<now->tm_hour<<":"
+                           <<now->tm_min<<":"<<now->tm_sec<<"\n";
+                appendfile <<" \n";
+            }
+        }
+        appendfile.close();
+        std::cout << "\nFile updated successfully.\n";    
+
+    
+    }
 
     rclcpp_action::Client<ModuleWorker>::SharedPtr module_client;
     rclcpp::Service<my_rfid_interfaces::srv::CommandService>::SharedPtr command_server_;
@@ -623,6 +792,7 @@ private:
     std::vector<uint8_t> write_epc;
     std::vector<uint8_t> single_epc;
     std::vector<uint8_t> multi_epc;
+    std::vector<uint8_t> write_user_data;
     bool goal_response;
 
 };
@@ -633,12 +803,10 @@ int main(int argc, char **argv)
     rclcpp::init(argc, argv);
     auto node = std::make_shared<ModuleClientNode>();
     rclcpp::executors::MultiThreadedExecutor executor;
+    create_epc_file();
     executor.add_node(node);
     executor.spin();
-    // node->send_goal_write(WRITE_DATA,write_data_size);
-    // node->send_goal_read();
-    // node->send_goal_multi();
-    // rclcpp::spin(node);
     rclcpp::shutdown();
     return 0;
 }
+

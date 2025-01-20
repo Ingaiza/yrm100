@@ -1,6 +1,8 @@
 #include "/home/ingaiza/yrm_module/src/yrm100/include/yrm100/uhf_tag.hpp"
 #include <stdlib.h>
 #include <string.h>
+#include <iomanip>
+#include <iostream>
 
 UHFTagWrapper* uhf_tag_wrapper_alloc() {
     UHFTagWrapper* uhf_tag_wrapper = (UHFTagWrapper*)malloc(sizeof(UHFTagWrapper));
@@ -72,8 +74,18 @@ void uhf_tag_set_tid_size(UHFTag* uhf_tag, size_t size) {
     uhf_tag->tid->size = size;
 }
 
-void uhf_tag_set_user(UHFTag* uhf_tag, uint8_t* data_in, size_t size) {
-    memcpy(uhf_tag->user->data, data_in, size);
+void uhf_tag_set_user(UHFTag* uhf_tag, std::vector<uint8_t> data_in, size_t size) {
+    // memcpy(uhf_tag->user->data, data_in, size);
+    uhf_tag->user->data.resize(size);
+    std::copy(data_in.begin(), data_in.end(), uhf_tag->user->data.begin());
+    for (size_t i = 0; i < size; i++) {
+        std::cout << std::hex 
+                << std::uppercase 
+                << std::setw(2) 
+                << std::setfill('0')
+                << static_cast<int>(uhf_tag->user->data[i])
+                << " ";
+    }
     uhf_tag->user->size = size;
 }
 
@@ -107,7 +119,8 @@ size_t uhf_tag_get_tid_size(UHFTag* uhf_tag) {
     return uhf_tag->tid->size;
 }
 
-uint8_t* uhf_tag_get_user(UHFTag* uhf_tag) {
+std::vector<uint8_t> uhf_tag_get_user(UHFTag* uhf_tag) 
+{
     return uhf_tag->user->data;
 }
 
