@@ -156,11 +156,11 @@ static M100ResponseType setup_and_send_rx_multiple(M100Module* module, uint8_t* 
             std::vector<uint8_t> test_epc;
 
             // assert(module->serial->multi_buffer_[load].vec_data != nullptr);
-            std::cout<<"Assertion complete for multi_buffer_["<<load<<"]"<<std::endl;
+            // std::cout<<"Assertion complete for multi_buffer_["<<load<<"]"<<std::endl;
             assert(buffer_return_[load]->data != nullptr);
-            std::cout<<"Assertion complete for buffer_return_["<<load<<"]->data"<<std::endl;
+            // std::cout<<"Assertion complete for buffer_return_["<<load<<"]->data"<<std::endl;
             assert(buffer_return_[load] != nullptr);
-            std::cout<<"Assertion complete for buffer_return_["<<load<<"]"<<std::endl;
+            // std::cout<<"Assertion complete for buffer_return_["<<load<<"]"<<std::endl;
 
             int size = buffer_return_[load]->size;
             test_epc.resize(buffer_return_[load]->size);
@@ -181,7 +181,7 @@ static M100ResponseType setup_and_send_rx_multiple(M100Module* module, uint8_t* 
             std::cout<<"buffer_return_["<<load<<"] size: "<<size<<std::endl;
             std::copy(test_epc.begin(),test_epc.end(),module->serial->multi_buffer_[load].vec_data.begin());	
             // std::memcpy(module->serial->multi_buffer_[load].data, buffer_return_[load]->data, buffer_return_[load]->size);
-            std::cout<<"Copy complete for buffer["<<load<<"]"<<std::endl;
+            // std::cout<<"Copy complete for buffer["<<load<<"]"<<std::endl;
 
             module->serial->multi_buffer_[load].size = buffer_return_[load]->size;
             module->serial->multi_buffer_[load].loaded = true;
@@ -213,11 +213,11 @@ static M100ResponseType setup_and_send_rx_multiple(M100Module* module, uint8_t* 
     {
         if(buffer_return_[check]->loaded)
         {
-            std::cout<<"multi_buffer_["<<check<<"]->loaded is TRUE"<<std::endl;
+            // std::cout<<"multi_buffer_["<<check<<"]->loaded is TRUE"<<std::endl;
             std::cout<<"Starting validation for multi_buffer_["<<check<<"]"<<std::endl;
             uint8_t* data;
             std::copy(module->serial->multi_buffer_[check].vec_data.begin(),module->serial->multi_buffer_[check].vec_data.end(),data);
-            std::cout<<"Copying complete to temporary data buffer for multi_buffer_["<<check<<"]"<<std::endl;
+            // std::cout<<"Copying complete to temporary data buffer for multi_buffer_["<<check<<"]"<<std::endl;
             size_t length_ = module->serial->multi_buffer_[check].size;
             // check if data is valid
             if(data[0] != FRAME_START || data[length_ - 1] != FRAME_END || length_ < 24)
@@ -357,12 +357,12 @@ char* m100_get_manufacturers(M100Module* module) {
 }
 
 M100ResponseType m100_single_poll(M100Module* module, UHFTag* uhf_tag) {
-    printf("Initializing Single Poll\n");
+    // printf("Initializing Single Poll\n");
     M100ResponseType rp_type =
         setup_and_send_rx(module, (uint8_t*)&CMD_SINGLE_POLLING.cmd[0], CMD_SINGLE_POLLING.length);
     if(rp_type != M100SuccessResponse) 
     {
-         printf("setup_and_send_rx failed\n");
+        //  printf("setup_and_send_rx failed\n");
         return rp_type;
     }
     uint8_t* data = module->serial->buffer_->data;
@@ -384,7 +384,7 @@ M100ResponseType m100_single_poll(M100Module* module, UHFTag* uhf_tag) {
     uhf_tag_set_epc_pc(uhf_tag, pc);
     uhf_tag_set_epc_crc(uhf_tag, crc);
     uhf_tag_set_epc(uhf_tag, data + 8, epc_len);
-    std::cout<<"M100 Single Poll function completed"<<std::endl;
+    // std::cout<<"M100 Single Poll function completed"<<std::endl;
     return M100SuccessResponse;
 }
 
@@ -493,6 +493,7 @@ M100ResponseType m100_set_select(M100Module* module, UHFTag* uhf_tag) {
     // payload len == sel param len + ptr len + mask len + epc len
     size_t payload_len = 7 + mask_length_bytes;
     memcpy(cmd, CMD_SET_SELECT_PARAMETER.cmd, cmd_length);
+    std::cout<<"memcpy 1 in select done...\n";
     // set new length
     cmd_length = 12 + mask_length_bytes + 2;
     // set payload length
@@ -508,7 +509,7 @@ M100ResponseType m100_set_select(M100Module* module, UHFTag* uhf_tag) {
     cmd[11] = false;
     // set mask
     memcpy((void*)&cmd[12], uhf_tag->epc->data, mask_length_bytes);
-
+    std::cout<<"memcpy 2 in select done...\n";
     // set checksum
     cmd[cmd_length - 2] = checksum(cmd + 1, 11 + mask_length_bytes);
     // end frame
@@ -558,6 +559,7 @@ M100ResponseType m100_read_label_data_storage(
     BankType bank,
     uint32_t access_pwd,
     uint16_t word_count) {
+    std::cout<<"In read label data.....\n";
     /*
         Will probably remove UHFTag as param and get it from get selected tag
     */
@@ -604,13 +606,15 @@ M100ResponseType m100_read_label_data_storage(
 
     size_t ptr_offset = 5 /*<-ptr offset*/ + uhf_tag_get_epc_size(uhf_tag) + 3 /*<-pc + ul*/;
     size_t bank_data_length = payload_len - (ptr_offset - 5 /*dont include the offset*/);
+    std::cout<<"Read data copy...\n";
     std::vector<uint8_t> read_data;
     read_data.resize(bank_data_length);
     std::copy(data + ptr_offset, data + ptr_offset + bank_data_length, read_data.begin());
 
     if(bank == TIDBank) {
         uhf_tag_set_tid(uhf_tag, data + ptr_offset, bank_data_length);
-    } else if(bank == UserBank) {
+    } 
+    else if(bank == UserBank) {
         // uhf_tag_set_user(uhf_tag, data + ptr_offset, bank_data_length);
         uhf_tag_set_user(uhf_tag, read_data, bank_data_length);
     }

@@ -95,18 +95,38 @@ private:
             auto feedback = std::make_shared<ModuleWorker::Feedback>();
             
             uint8_t data[16];
-            uint8_t* epc;
+            std::vector<uint8_t> epc;
+
             try
-            {
-                epc = read_select(data);
-                std::copy(epc, epc + EPC_SIZE,result->read_epc.begin());
-                std::copy(data, data + READ_WRITE_SIZE,result->read_data.begin());
-                result->response = true;
-                feedback->progress = "Read Operation Success";
-                goal_handle->publish_feedback(feedback);
-                goal_handle->succeed(result);
-
-
+            {   
+                auto option = read_select(data);
+                try
+                {
+                    if(option.has_value())
+                    {
+                        epc = option.value();
+                        std::copy(epc.begin(), epc.end(),result->read_epc.begin());
+                        std::copy(data, data + READ_WRITE_SIZE,result->read_data.begin());
+                        result->response = true;
+                        feedback->progress = "Read Operation Success";
+                        goal_handle->publish_feedback(feedback);
+                        goal_handle->succeed(result);
+                    }
+                    else
+                    {
+                        result->response = false;
+                        feedback->progress = "Read Operation Failed";
+                        goal_handle->publish_feedback(feedback);
+                        goal_handle->abort(result);
+                    }
+                
+                }
+                catch(const std::exception& e)
+                {
+                    std::cerr << "Read failed with error: "<<e.what() << '\n';
+                    throw;
+                }
+                
             }
             catch(const std::exception& e)
             {
@@ -122,7 +142,8 @@ private:
         {
             auto result = std::make_shared<ModuleWorker::Result>();
             auto feedback = std::make_shared<ModuleWorker::Feedback>();
-            uint8_t* epc;
+            // uint8_t* epc;
+            std::vector<uint8_t> epc;
             // uint8_t data[16];
             std::vector<uint8_t> data;
             auto goal_data = goal_handle->get_goal()->write_data;
@@ -148,12 +169,34 @@ private:
             }
             try
             {
-                epc = write_tag(data);
-                std::copy(epc, epc + EPC_SIZE,result->write_epc.begin());
-                result->response = true;
-                feedback->progress = "Write Success";
-                goal_handle->publish_feedback(feedback);
-                goal_handle->succeed(result);
+                auto option = write_tag(data);
+                try
+                {
+                    if(option.has_value())
+                    {
+                        epc = option.value();
+                        // epc = write_tag(data);
+                        std::copy(epc.begin(), epc.end(), result->write_epc.begin());
+                        result->response = true;
+                        feedback->progress = "Write Success";
+                        goal_handle->publish_feedback(feedback);
+                        goal_handle->succeed(result);
+                    }
+                    else
+                    {
+                        result->response = false;
+                        feedback->progress = "Write Failed";
+                        goal_handle->publish_feedback(feedback);
+                        goal_handle->abort(result);
+                    }
+                }
+                catch(const std::exception& e)
+                {
+                    std::cerr <<"Write failed with error: "<< e.what() << '\n';
+                    throw;
+                }
+                
+               
             }
             catch(const std::exception& e)
             {
@@ -169,26 +212,36 @@ private:
         {
             auto result = std::make_shared<ModuleWorker::Result>();
             auto feedback = std::make_shared<ModuleWorker::Feedback>();
-            uint8_t* epc;
+            std::vector<uint8_t> epc;
+            
             try
             {
-                epc = single_poll();
-                // assert(epc != nullptr); 
-                if(epc)
+                auto option = single_poll();
+                try
                 {
-                    std::copy(epc, epc + EPC_SIZE,result->single_inventory_epc.begin());
-                    result->response = true;
-                    feedback->progress = "Single Inventory Success";
-                    goal_handle->publish_feedback(feedback);
-                    goal_handle->succeed(result);
+                    if(option.has_value())
+                    {   
+                        epc.resize(EPC_SIZE);
+                        epc = option.value();
+                        std::copy(epc.begin(), epc.end(),result->single_inventory_epc.begin());
+                        result->response = true;
+                        feedback->progress = "Single Inventory Success";
+                        goal_handle->publish_feedback(feedback);
+                        goal_handle->succeed(result);
+                    }
+                    else
+                    {
+                        result->response = false;
+                        feedback->progress = "Single Inventory Failed";
+                        goal_handle->publish_feedback(feedback);
+                        goal_handle->succeed(result);
+                    }   
                 }
-                else
+                catch(const std::exception& e)
                 {
-                    result->response = false;
-                    feedback->progress = "Single Inventory Failed";
-                    goal_handle->publish_feedback(feedback);
-                    goal_handle->succeed(result);
-                }
+                    std::cerr<<"Single Poll failed with error: "<< e.what() << '\n';
+                    throw;
+                }             
                 
             }
             catch(const std::exception& e)

@@ -2,7 +2,7 @@
 #include <optional>
 #include <iomanip>
 
-uint8_t* single_poll()
+std::optional<std::vector<uint8_t>> single_poll()
 {
     // Create a UHFSerial instance
     UHFSerial* serial = new UHFSerial("/dev/ttyUSB0");
@@ -10,7 +10,7 @@ uint8_t* single_poll()
     if(serial == NULL) 
     {
         delete serial;
-        return 0;
+        return std::nullopt;
     }
 
     // Allocate memory for the UHF module
@@ -20,7 +20,7 @@ uint8_t* single_poll()
         // Clean up: Free allocated memory
         serial->stop();
         delete serial;
-        return 0;
+        return std::nullopt;
     }
 
     // Create a UHFTag object to store the tag information
@@ -31,7 +31,7 @@ uint8_t* single_poll()
         m100_module_free(module);
         serial->stop();
         delete serial;
-        return 0;
+        return std::nullopt;
     }
 
     // Perform a single tag polling
@@ -49,27 +49,30 @@ uint8_t* single_poll()
         uint16_t pc = uhf_tag_get_epc_pc(uhf_tag);
         uint16_t crc = uhf_tag_get_epc_crc(uhf_tag);
 
-        uint8_t* return_epc = new uint8_t[epc_size];
-        std::memcpy(return_epc, epc_data, epc_size);
+        // uint8_t* return_epc = new uint8_t[epc_size];
+        // std::memcpy(return_epc, epc_data, epc_size);
+        std::vector<uint8_t> return_epc;
+        return_epc.resize(epc_size);
+        std::copy(epc_data, epc_data + epc_size, return_epc.begin());
 
-        printf("EPC: ");
-        for(size_t i = 0; i < epc_size; i++) {
-            printf("%02X ", epc_data[i]);
-        }
-        printf("\nPC: %04X\nCRC: %04X\n", pc, crc);
+        // printf("EPC: ");
+        // for(size_t i = 0; i < epc_size; i++) {
+        //     printf("%02X ", epc_data[i]);
+        // }
+        // printf("\nPC: %04X\nCRC: %04X\n", pc, crc);
 
         // Clean up: Free allocated memory
         assert(uhf_tag != nullptr);
-        std::cout<<"uhf_tag assertion passed"<<std::endl;
+        // std::cout<<"uhf_tag assertion passed"<<std::endl;
         uhf_tag_free(uhf_tag);
         assert(module != nullptr);
-        std::cout<<"module assertion passed"<<std::endl;
+        // std::cout<<"module assertion passed"<<std::endl;
         m100_module_free(module);
         assert(serial != nullptr);
-        std::cout<<"serial assertion passed"<<std::endl;
+        // std::cout<<"serial assertion passed"<<std::endl;
         serial->stop();
         delete serial;
-        std::cout<<"ROS2 Single Poll function completed"<<std::endl;
+        std::cout<<"single_poll function completed"<<std::endl;
 
         return return_epc;
     } 
@@ -81,21 +84,21 @@ uint8_t* single_poll()
         m100_module_free(module);
         serial->stop();
         delete serial;
-        return 0;
+        return std::nullopt;
     }
 
 }
 // uint8_t* read(uint8_t* read_data)
 // {
 // }
-uint8_t* read_select(uint8_t* read_data)
+std::optional<std::vector<uint8_t>> read_select(uint8_t* read_data)
 {
     UHFSerial* serial = new UHFSerial("/dev/ttyUSB0");
     DEFAULT_PARAMS_ params ;
     if(serial == NULL) 
     {
         delete serial;
-        return 0;
+        return std::nullopt;
     }
 
     // Allocate memory for the UHF module
@@ -103,7 +106,7 @@ uint8_t* read_select(uint8_t* read_data)
     if(module == NULL) 
     {
         delete serial;
-        return 0;
+        return std::nullopt;
     }
 
     // Create a UHFTag object to store the tag information
@@ -114,8 +117,10 @@ uint8_t* read_select(uint8_t* read_data)
         m100_module_free(module);
         serial->stop();
         delete serial;
-        return 0;
+        return std::nullopt;
     }
+    std::cout<< "UHF_FUNCTIONS uhf_tag->user->data.data(): "<<static_cast<void*>(uhf_tag->user->data.data())<<"\n";
+
 
     // Perform a single tag polling
     M100ResponseType poll_response_ = m100_single_poll(module, uhf_tag);
@@ -124,12 +129,13 @@ uint8_t* read_select(uint8_t* read_data)
     if(poll_response_ != M100SuccessResponse) 
     {
         // Clean up: Free allocated memory
-        uhf_tag_free(uhf_tag);
+        uhf_tag_free_minimal(uhf_tag);
         m100_module_free(module);
         serial->stop();
         delete serial;
-        return 0;  
+        return std::nullopt;  
     } 
+    std::cout<<"Single Poll complete \n";
 
     M100ResponseType set_select_response_;
 
@@ -140,15 +146,16 @@ uint8_t* read_select(uint8_t* read_data)
 
     if(set_select_response_ != M100SuccessResponse)
     {
+        std::cout<<"Select response not valid\n";
         // Clean up: Free allocated memory
-        uhf_tag_free(uhf_tag);
+        uhf_tag_free_minimal(uhf_tag);
         m100_module_free(module);
         serial->stop();
         delete serial;
-        return 0;
+        return std::nullopt;
     }
   
-
+    std::cout<<"Set Select complete \n";
     M100ResponseType read_tag_response_;
 
     if(set_select_response_ == M100SuccessResponse)
@@ -173,20 +180,23 @@ uint8_t* read_select(uint8_t* read_data)
         uint16_t pc = uhf_tag_get_epc_pc(uhf_tag);
         uint16_t crc = uhf_tag_get_epc_crc(uhf_tag);
 
-        uint8_t* return_epc = new uint8_t[epc_size];
-        std::memcpy(return_epc, epc_data, epc_size);
+        // uint8_t* return_epc = new uint8_t[epc_size];
+        std::vector<uint8_t> return_epc;
+        return_epc.resize(epc_size);
+        // std::memcpy(return_epc, epc_data, epc_size);
+        std::copy(epc_data, epc_data + epc_size, return_epc.begin());
         
-        printf("READ EPC: ");
-        for(size_t i = 0; i < epc_size; i++) {
-            printf("%02X ", epc_data[i]);
-        }
-        printf("\nPC: %04X\nCRC: %04X\n", pc, crc);
+        // printf("READ EPC: ");
+        // for(size_t i = 0; i < epc_size; i++) {
+        //     printf("%02X ", epc_data[i]);
+        // }
+        // printf("\nPC: %04X\nCRC: %04X\n", pc, crc);
 
-        printf("READ DATA: ");
-        for(size_t i = 0; i < length; i++) {
-            printf("%02X ", data[i]);
-        }
-        printf("\n");
+        // printf("READ DATA: ");
+        // for(size_t i = 0; i < length; i++) {
+        //     printf("%02X ", data[i]);
+        // }
+        // printf("\n");
         // Clean up: Free allocated memory
         uhf_tag_free(uhf_tag);
         m100_module_free(module);
@@ -197,21 +207,21 @@ uint8_t* read_select(uint8_t* read_data)
     else 
     {   
         // Clean up: Free allocated memory
-        uhf_tag_free(uhf_tag);
+        uhf_tag_free_minimal(uhf_tag);
         m100_module_free(module);
         serial->stop();
         delete serial;
-        return 0;
+        return std::nullopt;
     }
 }
 
-uint8_t* write_tag(std::vector<uint8_t> write_data)
+std::optional<std::vector<uint8_t>> write_tag(std::vector<uint8_t>& write_data)
 {
     UHFSerial* serial = new UHFSerial("/dev/ttyUSB0");
     DEFAULT_PARAMS_ PARAMS_ ;
     if(serial == NULL) 
     {
-        return 0;
+        return std::nullopt;
     }
     // Allocate memory for the UHF module
     M100Module* module = m100_module_alloc(serial);
@@ -219,7 +229,7 @@ uint8_t* write_tag(std::vector<uint8_t> write_data)
     {
         // Clean up: Free allocated memory
         serial->stop();
-        return 0;
+        return std::nullopt;
     }
 
     // Create a UHFTag object to store the tag information
@@ -229,7 +239,7 @@ uint8_t* write_tag(std::vector<uint8_t> write_data)
         // Clean up: Free allocated memory
         m100_module_free(module);
         serial->stop();
-        return 0;
+        return std::nullopt;
     }
 
     // Perform a single tag polling
@@ -239,10 +249,10 @@ uint8_t* write_tag(std::vector<uint8_t> write_data)
     if(poll_response_ != M100SuccessResponse) 
     {
         // Clean up: Free allocated memory
-        uhf_tag_free(uhf_tag);
+        uhf_tag_free_minimal(uhf_tag);
         m100_module_free(module);
         serial->stop();
-        return 0;
+        return std::nullopt;
     }
     M100ResponseType set_select_response_;
 
@@ -254,10 +264,11 @@ uint8_t* write_tag(std::vector<uint8_t> write_data)
     if(set_select_response_ != M100SuccessResponse)
     {
         // Clean up: Free allocated memory
-        uhf_tag_free(uhf_tag);
+        std::cout<<"Select response not valid\n";
+        uhf_tag_free_minimal(uhf_tag);
         m100_module_free(module);
         serial->stop();
-        return 0;
+        return std::nullopt;
     }
 
     // save uhf_tag data
@@ -294,8 +305,11 @@ uint8_t* write_tag(std::vector<uint8_t> write_data)
         uint8_t* epc_data = uhf_tag_get_epc(saved_tag_);
         size_t epc_size = uhf_tag_get_epc_size(saved_tag_);
 
-        uint8_t* return_epc = new uint8_t[epc_size];
-        std::memcpy(return_epc, epc_data, epc_size);
+        // uint8_t* return_epc = new uint8_t[epc_size];
+        std::vector<uint8_t> return_epc;
+        return_epc.resize(epc_size);
+        // std::memcpy(return_epc, epc_data, epc_size);
+        std::copy(epc_data, epc_data + epc_size, return_epc.begin());
 
         // Clean up: Free allocated memory
         uhf_tag_free(uhf_tag);
@@ -306,34 +320,34 @@ uint8_t* write_tag(std::vector<uint8_t> write_data)
     else if(write_tag_response_ == M100ValidationFail)
     {
         // Clean up: Free allocated memory
-        uhf_tag_free(uhf_tag);
+        uhf_tag_free_minimal(uhf_tag);
         m100_module_free(module);
         serial->stop();
-        return 0;
+        return std::nullopt;
     }
     else if(write_tag_response_ == M100NoTagResponse)
     {
         // Clean up: Free allocated memory
-        uhf_tag_free(uhf_tag);
+        uhf_tag_free_minimal(uhf_tag);
         m100_module_free(module);
         serial->stop();
-        return 0;
+        return std::nullopt;
     }
     else
     {
         // Clean up: Free allocated memory
-        uhf_tag_free(uhf_tag);
+        uhf_tag_free_minimal(uhf_tag);
         m100_module_free(module);
         serial->stop();
-        return 0;
+        return std::nullopt;
     }
 
 
     // Clean up: Free allocated memory
-    uhf_tag_free(uhf_tag);
+    uhf_tag_free_minimal(uhf_tag);
     m100_module_free(module);
     serial->stop();
-    return 0;
+    return std::nullopt;
 }
 
 std::optional<std::vector<uint8_t>> multi_poll()

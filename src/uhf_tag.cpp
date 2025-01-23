@@ -28,6 +28,7 @@ UHFTag* uhf_tag_alloc() {
     uhf_tag->epc = (EPCMemoryBank*)malloc(sizeof(EPCMemoryBank));
     uhf_tag->tid = (TIDMemoryBank*)malloc(sizeof(TIDMemoryBank));
     uhf_tag->user = (UserMemoryBank*)malloc(sizeof(UserMemoryBank));
+    uhf_tag->user->data = std::vector<uint8_t>();
     return uhf_tag;
 }
 
@@ -40,6 +41,17 @@ void uhf_tag_reset(UHFTag* uhf_tag) {
 }
 
 void uhf_tag_free(UHFTag* uhf_tag) {
+    if(uhf_tag == NULL) return;
+    free(uhf_tag->reserved);
+    free(uhf_tag->epc);
+    free(uhf_tag->tid);
+    std::vector<uint8_t>().swap(uhf_tag->user->data);
+    free(uhf_tag->user);
+    free(uhf_tag);
+}
+
+
+void uhf_tag_free_minimal(UHFTag* uhf_tag) {
     if(uhf_tag == NULL) return;
     free(uhf_tag->reserved);
     free(uhf_tag->epc);
@@ -74,18 +86,29 @@ void uhf_tag_set_tid_size(UHFTag* uhf_tag, size_t size) {
     uhf_tag->tid->size = size;
 }
 
-void uhf_tag_set_user(UHFTag* uhf_tag, std::vector<uint8_t> data_in, size_t size) {
+void uhf_tag_set_user(UHFTag* uhf_tag, std::vector<uint8_t>& data_in, size_t size) {
     // memcpy(uhf_tag->user->data, data_in, size);
-    uhf_tag->user->data.resize(size);
-    std::copy(data_in.begin(), data_in.end(), uhf_tag->user->data.begin());
-    for (size_t i = 0; i < size; i++) {
-        std::cout << std::hex 
-                << std::uppercase 
-                << std::setw(2) 
-                << std::setfill('0')
-                << static_cast<int>(uhf_tag->user->data[i])
-                << " ";
+    std::cout<<"Setting user ....\n";
+    try
+    {
+        uhf_tag->user->data.resize(size);
     }
+    catch(const std::exception& e)
+    {
+        std::cerr <<"Resize failed with error: " <<e.what() << '\n';
+    }
+    
+    std::cout<< "data_in.data(): "<<static_cast<void*>(data_in.data())<<"\n";
+    std::cout<< "uhf_tag->user->data.data(): "<<static_cast<void*>(uhf_tag->user->data.data())<<'\n';
+    std::copy(data_in.begin(), data_in.end(), uhf_tag->user->data.begin());
+    // for (size_t i = 0; i < size; i++) {
+    //     std::cout << std::hex 
+    //             << std::uppercase 
+    //             << std::setw(2) 
+    //             << std::setfill('0')
+    //             << static_cast<int>(uhf_tag->user->data[i])
+    //             << " ";
+    // }
     uhf_tag->user->size = size;
 }
 

@@ -455,7 +455,7 @@ private:
             {
                auto finish = std::chrono::high_resolution_clock::now();
                std::chrono::duration<double> time_elapsed = finish - start;
-               if(time_elapsed.count() > 10.0) 
+               if(time_elapsed.count() > 15.0) 
                {
                     timer = false;
                     break;
@@ -496,7 +496,7 @@ private:
             {
                auto finish = std::chrono::high_resolution_clock::now();
                std::chrono::duration<double> time_elapsed = finish - start;
-               if(time_elapsed.count() > 10.0)
+               if(time_elapsed.count() > 15.0)
                {
                     timer = false;
                     break;
@@ -529,7 +529,7 @@ private:
             {
                auto finish = std::chrono::high_resolution_clock::now();
                std::chrono::duration<double> time_elapsed = finish - start;
-               if(time_elapsed.count() > 10.0) 
+               if(time_elapsed.count() > 15.0) 
                {
                     timer = false;
                     break;
@@ -560,7 +560,7 @@ private:
             {
                auto finish = std::chrono::high_resolution_clock::now();
                std::chrono::duration<double> time_elapsed = finish - start;
-               if(time_elapsed.count() > 10.0)
+               if(time_elapsed.count() > 15.0)
                {
                     timer = false;
                     break;

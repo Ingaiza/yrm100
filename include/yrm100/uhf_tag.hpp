@@ -56,7 +56,7 @@ void uhf_tag_wrapper_free(UHFTagWrapper* uhf_tag_wrapper);
 UHFTag* uhf_tag_alloc();
 void uhf_tag_reset(UHFTag* uhf_tag);
 void uhf_tag_free(UHFTag* uhf_tag);
-
+void uhf_tag_free_minimal(UHFTag* uhf_tag);
 void uhf_tag_set_kill_pwd(UHFTag* uhf_tag, uint8_t* data_in);
 void uhf_tag_set_access_pwd(UHFTag* uhf_tag, uint8_t* data_in);
 void uhf_tag_set_epc_pc(UHFTag* uhf_tag, uint16_t pc);
@@ -65,7 +65,7 @@ void uhf_tag_set_epc(UHFTag* uhf_tag, uint8_t* data_in, size_t size);
 void uhf_tag_set_epc_size(UHFTag* uhf_tag, size_t size);
 void uhf_tag_set_tid(UHFTag* uhf_tag, uint8_t* data_in, size_t size);
 void uhf_tag_set_tid_size(UHFTag* uhf_tag, size_t size);
-void uhf_tag_set_user(UHFTag* uhf_tag, std::vector<uint8_t> data_in, size_t size);
+void uhf_tag_set_user(UHFTag* uhf_tag, std::vector<uint8_t>& data_in, size_t size);
 void uhf_tag_set_user_size(UHFTag* uhf_tag, size_t size);
 
 uint8_t* uhf_tag_get_kill_pwd(UHFTag* uhf_tag);
