@@ -1,12 +1,12 @@
 #pragma once
 
-#include "/home/ingaiza/yrm_module/src/yrm100/include/yrm100/uhf_serial.hpp"
+#include "/home/aimbot/yrm100/src/yrm100/include/yrm100/uhf_serial.hpp"
 #include <stddef.h>
 #include <stdint.h>
 #include <stdbool.h>
-#include "/home/ingaiza/yrm_module/src/yrm100/include/yrm100/uhf_tag.hpp"
-#include "/home/ingaiza/yrm_module/src/yrm100/include/yrm100/uhf_buffer.hpp"
-#include "/home/ingaiza/yrm_module/src/yrm100/include/yrm100/uhf_module_settings.h"
+#include "/home/aimbot/yrm100/src/yrm100/include/yrm100/uhf_tag.hpp"
+#include "/home/aimbot/yrm100/src/yrm100/include/yrm100/uhf_buffer.hpp"
+#include "/home/aimbot/yrm100/src/yrm100/include/yrm100/uhf_module_settings.h"
 
 #define FRAME_START 0xBB
 #define FRAME_END 0x7E
