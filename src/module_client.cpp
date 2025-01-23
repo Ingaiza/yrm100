@@ -15,39 +15,44 @@ using namespace std::placeholders;
 std::string epc_file_name;
 
 
-std::string epc_name()
-{
-    std::string basePath = "/home/ingaiza/aimbot_inventory/epc_inventory";
-    std::string name;
-    int j = 0;
-    bool check = true;
+// std::string epc_name()
+// {
+//     std::string basePath = "/home/ingaiza/aimbot_inventory/epc_inventory";
+//     std::string name;
+//     int j = 0;
+//     bool check = true;
 
-    while(check) 
-    {
-        std::cout << "J value: " << j << "\n";
+//     while(check) 
+//     {
+//         std::cout << "J value: " << j << "\n";
         
-        name = basePath + std::to_string(j) + ".txt";
-        std::cout << "Checking file: " << name << "\n";
+//         name = basePath + std::to_string(j) + ".txt";
+//         std::cout << "Checking file: " << name << "\n";
         
-        if(std::filesystem::exists(name)) {
-            std::cout << "File exists\n";
-            j++;
-        } else {
-            std::cout << "File doesn't exist\n";
-            check = false;
-        }
-    }
-    return name;
-}
+//         if(std::filesystem::exists(name)) {
+//             std::cout << "File exists\n";
+//             j++;
+//         } else {
+//             std::cout << "File doesn't exist\n";
+//             check = false;
+//         }
+//     }
+//     return name;
+// }
 
 void create_epc_file()
 {
-    epc_file_name = epc_name();
-    std::ofstream epcfile(epc_file_name);
-    
+    // epc_file_name = epc_name();
     std::time_t t = time(0);
     std::tm* now = std::localtime(&t);
 
+    std::string basepath = "/home/ingaiza/aimbot_inventory/epc_inventory ";
+    std::string t_stamp = std::to_string(now->tm_mday) + "-" + std::to_string(now->tm_mon+1)  + "-" + 
+                            std::to_string(now->tm_year+1900)  + " " + std::to_string(now->tm_hour)  + "-" + 
+                            std::to_string(now->tm_min)  + "-" + std::to_string(now->tm_sec);
+    epc_file_name = basepath + t_stamp;
+    std::ofstream epcfile(epc_file_name);
+    
     if (epcfile.is_open()) 
     {
         epcfile << "AIMBOT PRODUCT EPC INVENTORY\n";
@@ -588,26 +593,15 @@ private:
 
     void read_inventory()
     {   
-        std::string basePath = "/home/ingaiza/aimbot_inventory/read_inventory";
-        std::string name;
-        int j = 0;
-        bool check = true;
+        std::time_t t = time(0);
+        std::tm* now = std::localtime(&t);
 
-        while(check) 
-        {
-            std::cout << "J value: " << j << "\n";
-            
-            name = basePath + std::to_string(j) + ".txt";
-            std::cout << "Checking file: " << name << "\n";
-            
-            if(std::filesystem::exists(name)) {
-                std::cout << "File exists\n";
-                j++;
-            } else {
-                std::cout << "File doesn't exist\n";
-                check = false;
-            }
-        }
+        std::string basepath = "/home/ingaiza/aimbot_inventory/read_inventory ";
+        std::string t_stamp = std::to_string(now->tm_mday) + "-" + std::to_string(now->tm_mon+1)  + "-" + 
+                              std::to_string(now->tm_year+1900)  + " " + std::to_string(now->tm_hour)  + "-" + 
+                              std::to_string(now->tm_min)  + "-" + std::to_string(now->tm_sec);
+        std::string name = basepath + t_stamp;
+ 
         std::ofstream readfile(name); 
         RFIDDataMemory read;
         read.data = read_data;
@@ -627,18 +621,21 @@ private:
         std::cout<<"Location: "<<location<<"\n";
         std::cout<<"Supplier ID: "<<supplier_id<<"\n";
         std::cout<<"Batch Number: "<<batch_number<<"\n";
-        std::cout<<"Status: "<<(status.inStock ? "In Stock" : "Out of Stock")<<"\n";
+        std::cout<<"Status: "<<(status.inStock ? "In Stock" : (status.reserved ? "Reserved" : (status.damaged ? "Damaged" : (status.expired ? "Expired" : "INVALID STATUS"))))<<"\n";
 
-        std::time_t t = time(0);
-        std::tm* now = std::localtime(&t);
+        auto chunks = HexChunkProcessor::processHexChunksNonDestructive(read_epc);
 
         if(readfile.is_open())
         {
             readfile << "AIMBOT READ INVENTORY.\n";
             readfile << "  \n";
-            readfile << "Inventory Timestamp: "<<now->tm_mday<<"/"<<now->tm_mon+1<<"/"<<now->tm_year+1900<<" "
-                     <<now->tm_hour<<":"<<now->tm_min<<":"<<now->tm_sec<<"\n";
-            readfile << "  \n";
+            for(size_t i = 0; i < chunks.size(); ++i)
+            {   
+                readfile <<"READ FROM TAG EPC: "<<chunks[i]<<"  | TIMESTAMP: "<<now->tm_mday<<"/"
+                            <<now->tm_mon+1<<"/"<<now->tm_year+1900<<" "<<now->tm_hour<<":"
+                            <<now->tm_min<<":"<<now->tm_sec<<"\n";
+                readfile <<" \n";
+            }
             readfile << "PRODUCT PARAMETERS\n";
             readfile << "  \n";
             readfile << "Date: "<<date.tm_mday<<"/"<<date.tm_mon+1<<"/"<<date.tm_year+1900<<"\n";
@@ -655,8 +652,7 @@ private:
             readfile << "  \n";
             readfile << "Batch Number: "<<batch_number<<"\n";
             readfile << "  \n";
-            readfile << "Status: "<<(status.inStock ? "In Stock" : "Out of Stock")<<"\n";
-
+            readfile << "Status: "<<(status.inStock ? "In Stock" : (status.reserved ? "Reserved" : (status.damaged ? "Damaged" : (status.expired ? "Expired" : "INVALID STATUS"))))<<"\n";
             readfile.close();
         }
         else
@@ -668,26 +664,15 @@ private:
 
     void write_inventory()
     {
-        std::string basePath = "/home/ingaiza/aimbot_inventory/write_inventory";
-        std::string name;
-        int j = 0;
-        bool check = true;
+        std::time_t t = time(0);
+        std::tm* now = std::localtime(&t);
 
-        while(check) 
-        {
-            std::cout << "J value: " << j << "\n";
-            
-            name = basePath + std::to_string(j) + ".txt";
-            std::cout << "Checking file: " << name << "\n";
-            
-            if(std::filesystem::exists(name)) {
-                std::cout << "File exists\n";
-                j++;
-            } else {
-                std::cout << "File doesn't exist\n";
-                check = false;
-            }
-        }
+        std::string basepath = "/home/ingaiza/aimbot_inventory/write_inventory ";
+        std::string t_stamp = std::to_string(now->tm_mday) + "-" + std::to_string(now->tm_mon+1)  + "-" + 
+                              std::to_string(now->tm_year+1900)  + " " + std::to_string(now->tm_hour)  + "-" + 
+                              std::to_string(now->tm_min)  + "-" + std::to_string(now->tm_sec);
+        std::string name = basepath + t_stamp;
+
         std::ofstream writefile(name); 
         RFIDDataMemory write;
         write.data = write_user_data;
@@ -707,10 +692,8 @@ private:
         std::cout<<"Location: "<<location<<"\n";
         std::cout<<"Supplier ID: "<<supplier_id<<"\n";
         std::cout<<"Batch Number: "<<batch_number<<"\n";
-        std::cout<<"Status: "<<(status.inStock ? "In Stock" : "Out of Stock")<<"\n";
+        std::cout<<"Status: "<<(status.inStock ? "In Stock" : (status.reserved ? "Reserved" : (status.damaged ? "Damaged" : (status.expired ? "Expired" : "INVALID STATUS"))))<<"\n";
 
-        std::time_t t = time(0);
-        std::tm* now = std::localtime(&t);
 
         auto chunks = HexChunkProcessor::processHexChunksNonDestructive(write_epc);
    
@@ -720,10 +703,9 @@ private:
             writefile << "  \n";
             for(size_t i = 0; i < chunks.size(); ++i)
             {   
-                writefile <<"DATA WAS WRITTEN TO TAG WITH EPC: "<<chunks[i]<<"  | TIMESTAMP: "<<now->tm_mday<<"/"
+                writefile <<"WRITTEN TO TAG EPC: "<<chunks[i]<<"  | TIMESTAMP: "<<now->tm_mday<<"/"
                             <<now->tm_mon+1<<"/"<<now->tm_year+1900<<" "<<now->tm_hour<<":"
                             <<now->tm_min<<":"<<now->tm_sec<<"\n";
-                writefile <<" \n";
             }
             writefile << "  \n";
             writefile << "Inventory Timestamp: "<<now->tm_mday<<"/"<<now->tm_mon+1<<"/"<<now->tm_year+1900<<" "
@@ -745,7 +727,7 @@ private:
             writefile << "  \n";
             writefile << "Batch Number: "<<batch_number<<"\n";
             writefile << "  \n";
-            writefile << "Status: "<<(status.inStock ? "In Stock" : "Out of Stock")<<"\n";
+            writefile << "Status: "<<(status.inStock ? "In Stock" : (status.reserved ? "Reserved" : (status.damaged ? "Damaged" : (status.expired ? "Expired" : "INVALID STATUS"))))<<"\n";
 
             writefile.close();
         }

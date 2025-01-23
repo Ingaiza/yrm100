@@ -38,7 +38,7 @@ public:
         if(command == "write")
         {
             write_data.resize(16);
-            std::cout<<"WRITE DATA VALUES WHEN SENDING REQUEST: "<<"\n";
+            std::cout<<"WRITE DATA VALUES WHEN SENDING REQUEST: "<<'\n';
             for (size_t i = 0; i < write_data.size(); i++) {
                 std::cout << std::hex 
                         << std::uppercase 
@@ -47,6 +47,7 @@ public:
                         << static_cast<int>(write_data[i])
                         << " ";
             }
+            std::cout << std::dec << '\n';
             std::copy(write_data.begin(),write_data.end(),request->data_write.begin());
         }
 
@@ -63,7 +64,7 @@ public:
                     RCLCPP_WARN(this->get_logger(),"READ SUCCESS");
                     read_data.resize(response->data_read.size());
                     std::copy(response->data_read.begin(),response->data_read.end(),read_data.begin());
-                    std::cout<<"READ DATA: "<<std::endl;
+                    std::cout<<"READ DATA: "<<'\n';
                     for(size_t i = 0; i < read_data.size(); i++) 
                     {
                         std::cout << std::hex                         // Set hex format
@@ -73,11 +74,11 @@ public:
                                 << static_cast<int>(read_data[i]) // Cast to int for proper display
                                 << " ";                                                                                                                                                                                                   // Space between bytes
                     }
-                    std::cout << std::dec << std::endl;
+                    std::cout << std::dec <<'\n';
 
                     read_epc.resize(response->epc_read.size());
                     std::copy(response->epc_read.begin(),response->epc_read.end(),read_epc.begin());
-                    std::cout<<"READ TAG EPC: "<<std::endl;
+                    std::cout<<"READ TAG EPC: "<<'\n';
                     for(size_t i = 0; i < read_epc.size(); i++) 
                     {
                         std::cout << std::hex                         // Set hex format
@@ -87,7 +88,7 @@ public:
                                 << static_cast<int>(read_epc[i]) // Cast to int for proper display
                                 << " ";                                                                                                                                                                                                   // Space between bytes
                     }
-                    std::cout << std::dec << std::endl;
+                    std::cout << std::dec << '\n';
 
 
                 }
@@ -106,7 +107,7 @@ public:
 
                     write_epc.resize(response->epc_write.size());
                     std::copy(response->epc_write.begin(),response->epc_write.end(),write_epc.begin());
-                    std::cout<<"WRITE TAG EPC: "<<std::endl;
+                    std::cout<<"WRITE TAG EPC: "<<'\n';
                     for(size_t i = 0; i < write_epc.size(); i++) 
                     {
                         std::cout << std::hex                         // Set hex format
@@ -116,7 +117,7 @@ public:
                                 << static_cast<int>(write_epc[i]) // Cast to int for proper display
                                 << " ";                                                                                                                                                                                                   // Space between bytes
                     }
-                    std::cout << std::dec << std::endl;
+                    std::cout << std::dec << '\n';
 
 
                 }
@@ -136,7 +137,7 @@ public:
 
                     single_epc.resize(response->single_poll_epc.size());
                     std::copy(response->single_poll_epc.begin(),response->single_poll_epc.end(),single_epc.begin());
-                    std::cout<<"SINGLE POLL TAG EPC: "<<std::endl;
+                    std::cout<<"SINGLE POLL TAG EPC: "<<'\n';
                     for(size_t i = 0; i < single_epc.size(); i++) 
                     {
                         std::cout << std::hex                         // Set hex format
@@ -146,7 +147,7 @@ public:
                                 << static_cast<int>(single_epc[i]) // Cast to int for proper display
                                 << " ";                                                                                                                                                                                                   // Space between bytes
                     }
-                    std::cout << std::dec << std::endl;
+                    std::cout << std::dec << '\n';
 
 
                 }
@@ -162,12 +163,12 @@ public:
                 {
                     success = true;
                     RCLCPP_WARN(this->get_logger(),"MULTI POLL SUCCESS");
-                    std::cout<<response->multi_epc_size<<std::endl;
+                    std::cout<<response->multi_epc_size<<'\n';
     
                     multi_epc.resize(response->multi_epc_size);
-                    std::cout<<"Starting Copy"<<std::endl;
+                    std::cout<<"Starting Copy"<<'\n';
                     std::copy_n(response->multi_poll_epc.begin(),std::min(response->multi_poll_epc.size(),multi_epc.size()),multi_epc.begin());
-                    std::cout<<"MULTI POLL TAG EPC: "<<std::endl;
+                    std::cout<<"MULTI POLL TAG EPC: "<<'\n';
                     for(size_t i = 0; i < multi_epc.size(); i++) 
                     {
                         std::cout << std::hex                         // Set hex format
@@ -177,7 +178,7 @@ public:
                                 << static_cast<int>(multi_epc[i]) // Cast to int for proper display
                                 << " ";                                                                                                                                                                                                   // Space between bytes
                     }
-                    std::cout << std::dec << std::endl;
+                    std::cout << std::dec << '\n';
 
                     // auto chunks = HexChunkProcessor::processHexChunks(multi_epc);
                     // for (size_t i = 0; i < chunks.size(); ++i) {
@@ -273,7 +274,7 @@ public:
                             << static_cast<int>(write_data[i])
                             << " ";
                 }
-                std::cout << std::endl;
+                std::cout << std::dec <<'\n';
             }
             
             ImGui::SetCursorPosY(35.0f);
@@ -457,9 +458,17 @@ public:
             usermem.calculateChecksum();
             std::vector<uint8_t> data = usermem.getData();
             std::string data_string = HexChunkProcessor::bytesToHexString(data, 0, data.size());
-            ImGui::Text("ENCODED WRITE DATA: ");
+            // ImGui::Text("ENCODED WRITE DATA: ");
+            if(ImGui::Button("WRITE DATA", ImVec2(100,20)))
+            {   
+                if(!usermem.getData().empty())
+                {
+                    threads.push_back(std::thread(std::bind(&CommandClient::command_client_callback, this,"write",usermem.getData())));
+                    write_data = usermem.getData();
+                }
+            }
             ImGui::SameLine();
-            ImGui::TextColored(GREEN_TEXT, "%s",data_string.c_str());
+            ImGui::TextColored(GREEN_TEXT, " %s",data_string.c_str());
 
             ImGui::SetCursorPosY(380.0f);
             ImGui::TextColored(RED_TEXT, "NOTE:");
