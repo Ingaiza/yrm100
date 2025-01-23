@@ -39,7 +39,7 @@ void UHFSerial::rx_worker() {
         }
     }
     catch (const std::exception& e) {
-        std::cerr << "RX worker exception: " << e.what() << std::endl;
+        std::cerr << "RX worker exception: " << e.what() << '\n';
         running_ = false;
     }
 }
@@ -90,7 +90,7 @@ void UHFSerial::start_receive() {
 void UHFSerial::handle_receive(const boost::system::error_code& error, std::size_t bytes_transferred) {
     if (error) {
         if (error != boost::asio::error::operation_aborted) {
-            std::cerr << "Read error: " << error.message() << std::endl;
+            std::cerr << "Read error: " << error.message() << '\n';
         }
         return;
     }
@@ -102,7 +102,7 @@ void UHFSerial::handle_receive(const boost::system::error_code& error, std::size
 
             if (read_buffer_[0] == FRAME_END) {
                 uhf_buffer_close(buffer_);
-                std::cout << "UHF Total length read = " << uhf_buffer_get_size(buffer_) << std::endl;
+                std::cout << "UHF Total length read = " << uhf_buffer_get_size(buffer_) << '\n';
                 
                 if (callback_) {
                     callback_(uhf_buffer_get_data(buffer_), callback_ctx_);
@@ -126,7 +126,7 @@ void UHFSerial::send(const uint8_t* data, size_t size) {
         boost::asio::buffer(data, size),
         [](const boost::system::error_code& error, std::size_t /*bytes_transferred*/) {
             if (error) {
-                std::cerr << "Write error: " << error.message() << std::endl;
+                std::cerr << "Write error: " << error.message() << '\n';
             }
         });
 }
@@ -137,7 +137,7 @@ void UHFSerial::send(const uint8_t* data, size_t size) {
 //     boost::system::error_code error;
 //     boost::asio::write(*serial_port_, boost::asio::buffer(data, size), error);
 //     if (error) {
-//         std::cerr << "Write error: " << error.message() << std::endl;
+//         std::cerr << "Write error: " << error.message() << '\n';
 //     }
 // }
 size_t UHFSerial::send_wait(const uint8_t* data, size_t size, uint8_t* response_framed_) 
@@ -151,7 +151,7 @@ size_t UHFSerial::send_wait(const uint8_t* data, size_t size, uint8_t* response_
     boost::asio::write(*serial_port_, boost::asio::buffer(data, size), error);
     if (error) 
     {
-        std::cerr << "Write error: " << error.message() << std::endl;
+        std::cerr << "Write error: " << error.message() << '\n';
         return 0;
     }
 
@@ -170,7 +170,7 @@ size_t UHFSerial::send_wait(const uint8_t* data, size_t size, uint8_t* response_
         size_t bytes_read = serial_port_->read_some(boost::asio::buffer(buffer + received, sizeof(buffer) - received), error);
         if (error) 
         {
-            std::cerr << "Read error: " << error.message() << std::endl;
+            std::cerr << "Read error: " << error.message() << '\n';
             return buffer_framed_size_;
         }
 
@@ -206,13 +206,13 @@ size_t UHFSerial::send_wait(const uint8_t* data, size_t size, uint8_t* response_
 
         if (std::chrono::steady_clock::now() - start_time > timeout) 
         {
-            std::cerr << "Timeout waiting for response" << std::endl;
+            std::cerr << "Timeout waiting for response" << '\n';
             return buffer_framed_size_;
         }
     }
 
     std::memcpy(response_framed_, buffer_framed_, buffer_framed_size_);
-    // std::cout<<"Send Wait Completed"<<std::endl;
+    // std::cout<<"Send Wait Completed"<<'\n';
     return buffer_framed_size_;
 }
 
@@ -231,7 +231,7 @@ void UHFSerial::send_wait_multi(Buffer** buffer_return_,const uint8_t* data, siz
     boost::asio::write(*serial_port_, boost::asio::buffer(data, size), error);
     if (error) 
     {
-        std::cerr << "Write error: " << error.message() << std::endl;
+        std::cerr << "Write error: " << error.message() << '\n';
         // return M100SerialPortFailed;
     }
 
@@ -244,12 +244,12 @@ void UHFSerial::send_wait_multi(Buffer** buffer_return_,const uint8_t* data, siz
     
     for (int i = 0; i < 5; i++)  
     {
-        // std::cout << "Starting buffer_loaded_[] allocation for index " << i << std::endl;
+        // std::cout << "Starting buffer_loaded_[] allocation for index " << i << '\n';
         // Allocate the Buffer struct itself
         buffer_loaded_[i] = (Buffer*)malloc(sizeof(Buffer));
         if (buffer_loaded_[i] == nullptr) 
         {
-            std::cerr << "Failed to allocate Buffer struct for index " << i << std::endl;
+            std::cerr << "Failed to allocate Buffer struct for index " << i << '\n';
             // Clean up previously allocated buffers
             for (int j = 0; j < i; j++) 
             {
@@ -268,7 +268,7 @@ void UHFSerial::send_wait_multi(Buffer** buffer_return_,const uint8_t* data, siz
         buffer_loaded_[i]->data = (uint8_t*)malloc(256);
         if (buffer_loaded_[i]->data == nullptr) 
         {
-            std::cerr << "Failed to allocate data buffer for index " << i << std::endl;
+            std::cerr << "Failed to allocate data buffer for index " << i << '\n';
             free(buffer_loaded_[i]);
             // Clean up previously allocated buffers
             for (int j = 0; j < i; j++) 
@@ -291,7 +291,7 @@ void UHFSerial::send_wait_multi(Buffer** buffer_return_,const uint8_t* data, siz
         buffer_loaded_[i]->tail = 0;
         buffer_loaded_[i]->closed = false;
         buffer_loaded_[i]->loaded = false;
-        // std::cout << "Completed allocation for buffer_loaded_[" << i << "]" << std::endl;
+        // std::cout << "Completed allocation for buffer_loaded_[" << i << "]" << '\n';
     }
     assert(buffer_loaded_ != nullptr);
     for(int i=0;i<5;i++)
@@ -313,7 +313,7 @@ void UHFSerial::send_wait_multi(Buffer** buffer_return_,const uint8_t* data, siz
         size_t bytes_read = serial_port_->read_some(boost::asio::buffer(buffer + received, sizeof(buffer) - received), error);
         if (error) 
         {
-            std::cerr << "Read error: " << error.message() << std::endl;
+            std::cerr << "Read error: " << error.message() << '\n';
             // return M100SerialPortFailed;
         }
 
@@ -324,7 +324,7 @@ void UHFSerial::send_wait_multi(Buffer** buffer_return_,const uint8_t* data, siz
             read_ = false;
         }
     }
-    std::cout<<"Received Bytes: "<<received<<std::endl;
+    std::cout<<"Received Bytes: "<<received<<'\n';
     
     uint8_t crc_buffer[5];
     bool load_tag = true;
@@ -422,7 +422,7 @@ void UHFSerial::send_wait_multi(Buffer** buffer_return_,const uint8_t* data, siz
                 printf("Next tag will be loaded at Index: %d\n\n",index);
                 if(index < 5)
                 {
-                    if(buffer_loaded_[index]->loaded) std::cout<<"loaded status of next tag of index"<<index<<"is: True"<<std::endl;
+                    if(buffer_loaded_[index]->loaded) std::cout<<"loaded status of next tag of index"<<index<<"is: True"<<'\n';
                 }
                 start_frame_ = false;
                 end_frame_ = false;
@@ -440,7 +440,7 @@ void UHFSerial::send_wait_multi(Buffer** buffer_return_,const uint8_t* data, siz
         }
     }
 
-    std::cout<<"Starting data loading"<<std::endl;
+    std::cout<<"Starting data loading"<<'\n';
     for(int load=0;load<5;load++)
     {   
         if(buffer_loaded_[load]->loaded)
@@ -455,7 +455,7 @@ void UHFSerial::send_wait_multi(Buffer** buffer_return_,const uint8_t* data, siz
         free(buffer_loaded_[load]); 
     }
     // std::memcpy(response_framed_, buffer_framed_, buffer_framed_size_);
-    std::cout<<"Data loading complete"<<std::endl;
+    std::cout<<"Data loading complete"<<'\n';
     
 }
 
@@ -485,7 +485,7 @@ void UHFSerial::tick_reset() {
 void UHFSerial::pop_from_buffer(uint8_t* buffer, size_t& buffer_size) 
 {
     if (buffer_size == 0) {
-     std::cout<<"Passed buffer is Empty"<<std::endl;
+     std::cout<<"Passed buffer is Empty"<<'\n';
     }    
     // Shift the remaining elements to the left
     for (size_t i = 1; i < buffer_size; i++) {

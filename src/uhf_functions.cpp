@@ -40,11 +40,11 @@ std::optional<std::vector<uint8_t>> single_poll()
     // Check the poll_response_ type and handle accordingly
     if(poll_response_ == M100SuccessResponse) {
         
-        std::cout<<"Single Poll response success"<<std::endl;        
+        std::cout<<"Single Poll response success"<<'\n';        
         // Retrieve and display EPC, PC, and CRC information
         uint8_t* epc_data = uhf_tag_get_epc(uhf_tag);
         assert(epc_data != nullptr);
-        std::cout<<"epc_data assertion passed"<<std::endl;
+        std::cout<<"epc_data assertion passed"<<'\n';
         size_t epc_size = uhf_tag_get_epc_size(uhf_tag);
         uint16_t pc = uhf_tag_get_epc_pc(uhf_tag);
         uint16_t crc = uhf_tag_get_epc_crc(uhf_tag);
@@ -63,22 +63,22 @@ std::optional<std::vector<uint8_t>> single_poll()
 
         // Clean up: Free allocated memory
         assert(uhf_tag != nullptr);
-        // std::cout<<"uhf_tag assertion passed"<<std::endl;
+        // std::cout<<"uhf_tag assertion passed"<<'\n';
         uhf_tag_free(uhf_tag);
         assert(module != nullptr);
-        // std::cout<<"module assertion passed"<<std::endl;
+        // std::cout<<"module assertion passed"<<'\n';
         m100_module_free(module);
         assert(serial != nullptr);
-        // std::cout<<"serial assertion passed"<<std::endl;
+        // std::cout<<"serial assertion passed"<<'\n';
         serial->stop();
         delete serial;
-        std::cout<<"single_poll function completed"<<std::endl;
+        std::cout<<"single_poll function completed"<<'\n';
 
         return return_epc;
     } 
     else 
     {
-        std::cout<<"Single Poll response failed"<<std::endl;        
+        std::cout<<"Single Poll response failed"<<'\n';        
         // Clean up:Free allocated memory
         uhf_tag_free(uhf_tag);
         m100_module_free(module);
@@ -166,16 +166,16 @@ std::optional<std::vector<uint8_t>> read_select(uint8_t* read_data)
     if(read_tag_response_ == M100SuccessResponse)
     {
         assert(read_data != nullptr);
-        std::cout<<"read_data assertion passed"<<std::endl;
+        std::cout<<"read_data assertion passed"<<'\n';
         std::vector<uint8_t> data = uhf_tag_get_user(uhf_tag);
         assert(!data.empty());
-        std::cout<<"data assertion passed"<<std::endl;
+        std::cout<<"data assertion passed"<<'\n';
         size_t length = uhf_tag_get_user_size(uhf_tag);
         // std::memcpy(read_data,data,length);
         std::copy(data.begin(), data.end(), read_data);
         uint8_t* epc_data = uhf_tag_get_epc(uhf_tag);
         assert(epc_data != nullptr);
-        std::cout<<"epc_data assertion passed"<<std::endl;
+        std::cout<<"epc_data assertion passed"<<'\n';
         size_t epc_size = uhf_tag_get_epc_size(uhf_tag);
         uint16_t pc = uhf_tag_get_epc_pc(uhf_tag);
         uint16_t crc = uhf_tag_get_epc_crc(uhf_tag);
@@ -371,7 +371,7 @@ std::optional<std::vector<uint8_t>> multi_poll()
 
     // Perform a single tag polling
     M100ResponseType poll_response_ = m100_multi_poll(module);
-    std::cout<<"Completed m100 multi poll"<<std::endl;
+    std::cout<<"Completed m100 multi poll"<<'\n';
     std::vector<uint8_t> epc_data;
     size_t epc_size;
     size_t EPC = 12;
@@ -379,21 +379,21 @@ std::optional<std::vector<uint8_t>> multi_poll()
     // Check the poll_response_ type and handle accordingly
     if(poll_response_ == M100SuccessResponse) 
     {
-        std::cout<<"TAG NO: "<<module->tag_no<<std::endl;
+        std::cout<<"TAG NO: "<<module->tag_no<<'\n';
         for(int alloc=0;alloc<module->tag_no;alloc++)
         {
-            std::cout<<"Completed allocation for uhf_tag["<<alloc<<"]"<<std::endl;
+            std::cout<<"Completed allocation for uhf_tag["<<alloc<<"]"<<'\n';
             uhf_tag[alloc] = uhf_tag_alloc();
         }
-        std::cout<<"Completed all tags allocation"<<std::endl;
+        std::cout<<"Completed all tags allocation"<<'\n';
         M100ResponseType alloc_response_ = multi_poll_tag_alloc(module, uhf_tag);
-        std::cout<<"Completed multi poll tag alloc function"<<std::endl;
+        std::cout<<"Completed multi poll tag alloc function"<<'\n';
         if(alloc_response_ == M100SuccessResponse)
         {   
             epc_size = module->tag_no * EPC;
             epc_data.resize(epc_size);
             int value = epc_size;
-            std::cout<<"TOTAL EPC SIZE IS TAG NO("<<module->tag_no<<") * EPC of one tag(12) = "<<value<<std::endl;
+            std::cout<<"TOTAL EPC SIZE IS TAG NO("<<module->tag_no<<") * EPC of one tag(12) = "<<value<<'\n';
             for (int i = 0; i < module->tag_no; i++)
             {
                 // Retrieve and display EPC, PC, and CRC information
@@ -402,7 +402,7 @@ std::optional<std::vector<uint8_t>> multi_poll()
                 std::copy(epc, epc + EPC, epc_data.begin() + i*EPC);
             }
         }
-        std::cout<<"Loading to epc_data vector complete"<<std::endl;
+        std::cout<<"Loading to epc_data vector complete"<<'\n';
 
         // uint8_t* return_epc = new uint8_t[epc_size];
         // std::copy(epc_data.begin(),epc_data.end(),return_epc);       
@@ -411,7 +411,7 @@ std::optional<std::vector<uint8_t>> multi_poll()
         // Check if epc_size is valid
         // if (epc_size == 0) 
         // {
-        //     std::cerr << "Invalid epc_size: " << epc_size << std::endl;
+        //     std::cerr << "Invalid epc_size: " << epc_size << '\n';
         //     return std::nullopt;
         // }
 
@@ -420,29 +420,29 @@ std::optional<std::vector<uint8_t>> multi_poll()
         //     // Verify epc_data has correct size
         //     if (epc_data.size() != epc_size) 
         //     {
-        //         std::cerr <<"Size mismatch: epc_data size: "<< epc_data.size()<< ", epc_size: "<< epc_size <<std::endl;
+        //         std::cerr <<"Size mismatch: epc_data size: "<< epc_data.size()<< ", epc_size: "<< epc_size <<'\n';
         //         return std::nullopt;
         //     }
 
         // } 
         // catch (const std::bad_alloc& e) 
         // {
-        //     std::cerr << "Memory allocation failed: " << e.what() << std::endl;
+        //     std::cerr << "Memory allocation failed: " << e.what() << '\n';
         //     return std::nullopt;
         // }
 
-        // std::cout<<"Starting m100_stop_multi_poll"<<std::endl;
+        // std::cout<<"Starting m100_stop_multi_poll"<<'\n';
         M100ResponseType stop_response_ = m100_stop_multi_poll(module);
 
         // Clean up: Free allocated memory
-        std::cout<<"Freeing uhf_tag Memory"<<std::endl;
+        std::cout<<"Freeing uhf_tag Memory"<<'\n';
         for(int free=0;free<module->tag_no;free++)
         {
             uhf_tag_free(uhf_tag[free]);
         }
-        std::cout<<"Freeing module Memory"<<std::endl;
+        std::cout<<"Freeing module Memory"<<'\n';
         m100_module_free(module);
-        std::cout<<"Stoping Boost ASIO serial communication "<<std::endl;
+        std::cout<<"Stoping Boost ASIO serial communication "<<'\n';
         serial->stop();
         delete serial;
         return epc_data;
@@ -451,9 +451,9 @@ std::optional<std::vector<uint8_t>> multi_poll()
     else 
     {
         // Clean up: Free allocated memory
-        std::cout<<"Freeing module Memory"<<std::endl;
+        std::cout<<"Freeing module Memory"<<'\n';
         m100_module_free(module);
-        std::cout<<"Stoping Boost ASIO serial communication "<<std::endl;
+        std::cout<<"Stoping Boost ASIO serial communication "<<'\n';
         serial->stop();
         delete serial;
         return std::nullopt;

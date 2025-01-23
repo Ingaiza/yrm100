@@ -10,15 +10,15 @@
 #define WAIT_TICK 4000 // max wait time in between each byte
 
 static M100ResponseType setup_and_send_rx(M100Module* module, uint8_t* cmd, size_t cmd_length) {
-    // std::cout<<"Initiallizing setup_and_send_rx"<<std::endl;
+    // std::cout<<"Initiallizing setup_and_send_rx"<<'\n';
 
     if (!module || !module->serial || !module->serial->buffer_) 
     {
-        std::cout<<"Invalid module or serial buffer"<<std::endl;
+        std::cout<<"Invalid module or serial buffer"<<'\n';
         return M100ValidationFail;
     }
     // printf("module is valid");
-    // std::cout<<"module is valid"<<std::endl;
+    // std::cout<<"module is valid"<<'\n';
     // clear buffer
     if(!module->serial->buffer_->multi)
     {
@@ -30,28 +30,28 @@ static M100ResponseType setup_and_send_rx(M100Module* module, uint8_t* cmd, size
     // check if size > 0
     if(!length) 
     {
-        std::cout<<"Empty Response in setup_and_send_rx"<<std::endl;
+        std::cout<<"Empty Response in setup_and_send_rx"<<'\n';
         return M100EmptyResponse;
     }
     // check if data is valid
     if(data[0] != FRAME_START || data[length - 1] != FRAME_END)
     {
-        std::cout<<"Validation Failed in setup_and_send_rx "<<std::endl;
+        std::cout<<"Validation Failed in setup_and_send_rx "<<'\n';
         return M100ValidationFail;
     }
     // check if checksum is correct
     if(checksum(data + 1, length - 3) != data[length - 2])
     {
-        std::cout<<"Checksum failed in setup_and_send_rx"<<std::endl;
+        std::cout<<"Checksum failed in setup_and_send_rx"<<'\n';
         return M100ChecksumFail;
     }
-    // std::cout<<"Setup and send rx completed "<<std::endl;
+    // std::cout<<"Setup and send rx completed "<<'\n';
     return M100SuccessResponse;
 }
 
 static M100ResponseType setup_and_send_rx_multiple(M100Module* module, uint8_t* cmd, size_t cmd_length) 
 {
-    std::cout<<"Initializing setup_and_send_rx"<<std::endl;
+    std::cout<<"Initializing setup_and_send_rx"<<'\n';
     // clear buffer
     // for(int buffer=0;buffer < 5;buffer++)
     // {
@@ -60,12 +60,12 @@ static M100ResponseType setup_and_send_rx_multiple(M100Module* module, uint8_t* 
     Buffer* buffer_return_[5];
     for (int i = 0; i < 5; i++)  
     {
-        // std::cout << "Starting buffer allocation for index " << i << std::endl;
+        // std::cout << "Starting buffer allocation for index " << i << '\n';
         // Allocate the Buffer struct itself
         buffer_return_[i] = (Buffer*)malloc(sizeof(Buffer));
         if (buffer_return_[i] == nullptr) 
         {
-            std::cerr << "Failed to allocate Buffer struct for index " << i << std::endl;
+            std::cerr << "Failed to allocate Buffer struct for index " << i << '\n';
             // Clean up previously allocated buffers
             for (int j = 0; j < i; j++) 
             {
@@ -85,7 +85,7 @@ static M100ResponseType setup_and_send_rx_multiple(M100Module* module, uint8_t* 
         buffer_return_[i]->data = (uint8_t*)malloc(256);
         if (buffer_return_[i]->data == nullptr) 
         {
-            std::cerr << "Failed to allocate data buffer for index " << i << std::endl;
+            std::cerr << "Failed to allocate data buffer for index " << i << '\n';
             free(buffer_return_[i]);
             // Clean up previously allocated buffers
             for (int j = 0; j < i; j++) 
@@ -109,9 +109,9 @@ static M100ResponseType setup_and_send_rx_multiple(M100Module* module, uint8_t* 
         buffer_return_[i]->tail = 0;
         buffer_return_[i]->closed = false;
         buffer_return_[i]->loaded = false;
-        // std::cout << "Completed allocation for buffer[" << i << "]" << std::endl;
+        // std::cout << "Completed allocation for buffer[" << i << "]" << '\n';
     }
-    std::cout<<"Return Buffer allocation complete"<<std::endl;
+    std::cout<<"Return Buffer allocation complete"<<'\n';
     assert((Buffer*)&buffer_return_[0] != nullptr);
     assert(buffer_return_ != nullptr);
     for(int i=0;i<5;i++)
@@ -119,7 +119,7 @@ static M100ResponseType setup_and_send_rx_multiple(M100Module* module, uint8_t* 
         assert(buffer_return_[i]->data != nullptr);
     }
     module->serial->send_wait_multi(buffer_return_,cmd, cmd_length); // (Buffer*)&buffer_return_[0]
-    std::cout<<"Response captured"<<std::endl;
+    std::cout<<"Response captured"<<'\n';
   
     for(int load=0;load<5;load++)
     {	
@@ -132,35 +132,35 @@ static M100ResponseType setup_and_send_rx_multiple(M100Module* module, uint8_t* 
             
             if (buffer_return_[load] == nullptr) 
             {
-                std::cerr << "Error: buffer_return_[" << load << "] is null" << std::endl;
+                std::cerr << "Error: buffer_return_[" << load << "] is null" << '\n';
                 continue;
             }
 
             if (!buffer_return_[load]->loaded) 
             {
-                std::cerr << "Buffer " << load << " not loaded" << std::endl;
+                std::cerr << "Buffer " << load << " not loaded" << '\n';
                 continue;
             }
 
             if (buffer_return_[load]->data == nullptr) 
             {
-                std::cerr << "Error: buffer_return_[" << load << "]->data is null" << std::endl;
+                std::cerr << "Error: buffer_return_[" << load << "]->data is null" << '\n';
                 continue;
             }
 
             if (buffer_return_[load]->size == 0) 
             {
-                std::cerr << "Warning: buffer_return_[" << load << "] has zero size" << std::endl;
+                std::cerr << "Warning: buffer_return_[" << load << "] has zero size" << '\n';
                 continue;
             }
             std::vector<uint8_t> test_epc;
 
             // assert(module->serial->multi_buffer_[load].vec_data != nullptr);
-            // std::cout<<"Assertion complete for multi_buffer_["<<load<<"]"<<std::endl;
+            // std::cout<<"Assertion complete for multi_buffer_["<<load<<"]"<<'\n';
             assert(buffer_return_[load]->data != nullptr);
-            // std::cout<<"Assertion complete for buffer_return_["<<load<<"]->data"<<std::endl;
+            // std::cout<<"Assertion complete for buffer_return_["<<load<<"]->data"<<'\n';
             assert(buffer_return_[load] != nullptr);
-            // std::cout<<"Assertion complete for buffer_return_["<<load<<"]"<<std::endl;
+            // std::cout<<"Assertion complete for buffer_return_["<<load<<"]"<<'\n';
 
             int size = buffer_return_[load]->size;
             test_epc.resize(buffer_return_[load]->size);
@@ -176,21 +176,21 @@ static M100ResponseType setup_and_send_rx_multiple(M100Module* module, uint8_t* 
                         << static_cast<int>(test_epc[i])  // Cast to int for proper display
                         << " ";                                                                                                                                                                                                   // Space between bytes
             }
-            std::cout << std::dec << std::endl;
+            std::cout << std::dec << '\n';
 
-            std::cout<<"buffer_return_["<<load<<"] size: "<<size<<std::endl;
+            std::cout<<"buffer_return_["<<load<<"] size: "<<size<<'\n';
             std::copy(test_epc.begin(),test_epc.end(),module->serial->multi_buffer_[load].vec_data.begin());	
             // std::memcpy(module->serial->multi_buffer_[load].data, buffer_return_[load]->data, buffer_return_[load]->size);
-            // std::cout<<"Copy complete for buffer["<<load<<"]"<<std::endl;
+            // std::cout<<"Copy complete for buffer["<<load<<"]"<<'\n';
 
             module->serial->multi_buffer_[load].size = buffer_return_[load]->size;
             module->serial->multi_buffer_[load].loaded = true;
-            std::cout<<"Loading complete for multi_buffer_["<<load<<"]"<<std::endl;	
+            std::cout<<"Loading complete for multi_buffer_["<<load<<"]"<<'\n';	
     	}
     
     }
     
-    std::cout<<"Response Loaded to Buffer Successfully\n"<<std::endl;
+    std::cout<<"Response Loaded to Buffer Successfully\n"<<'\n';
     // check if size > 0
      if(!buffer_return_[0]->loaded) 
      {
@@ -213,22 +213,22 @@ static M100ResponseType setup_and_send_rx_multiple(M100Module* module, uint8_t* 
     {
         if(buffer_return_[check]->loaded)
         {
-            // std::cout<<"multi_buffer_["<<check<<"]->loaded is TRUE"<<std::endl;
-            std::cout<<"Starting validation for multi_buffer_["<<check<<"]"<<std::endl;
+            // std::cout<<"multi_buffer_["<<check<<"]->loaded is TRUE"<<'\n';
+            std::cout<<"Starting validation for multi_buffer_["<<check<<"]"<<'\n';
             uint8_t* data;
             std::copy(module->serial->multi_buffer_[check].vec_data.begin(),module->serial->multi_buffer_[check].vec_data.end(),data);
-            // std::cout<<"Copying complete to temporary data buffer for multi_buffer_["<<check<<"]"<<std::endl;
+            // std::cout<<"Copying complete to temporary data buffer for multi_buffer_["<<check<<"]"<<'\n';
             size_t length_ = module->serial->multi_buffer_[check].size;
             // check if data is valid
             if(data[0] != FRAME_START || data[length_ - 1] != FRAME_END || length_ < 24)
             {
-                std::cout<<"Validation Failed for multi_buffer_["<<check<<"] "<<std::endl;
+                std::cout<<"Validation Failed for multi_buffer_["<<check<<"] "<<'\n';
                 module->serial->multi_buffer_[check].loaded = false;
             }
             // check if checksum is correct
             if(checksum(data + 1, length_ - 3) != data[length_ - 2])
             {
-                std::cout<<"Checksum Failed for multi_buffer_["<<check<<"] "<<std::endl;
+                std::cout<<"Checksum Failed for multi_buffer_["<<check<<"] "<<'\n';
                 module->serial->multi_buffer_[check].loaded = false;
             }
             if(module->serial->multi_buffer_[check].loaded)
@@ -250,7 +250,7 @@ static M100ResponseType setup_and_send_rx_multiple(M100Module* module, uint8_t* 
             free(buffer_return_[i]);
         }
     }
-    // std::cout<<"setup and send rx multiple complete"<<std::endl;
+    // std::cout<<"setup and send rx multiple complete"<<'\n';
     return success > 0 ? M100SuccessResponse : M100ValidationFail;
 
 }
@@ -278,14 +278,14 @@ M100Module* m100_module_alloc(UHFSerial* serial) {
 }
 
 void m100_module_free(M100Module* module) {
-    // std::cout<<"Starting module free"<<std::endl;
+    // std::cout<<"Starting module free"<<'\n';
     // m100_module_info_free(module->info);
-    // std::cout<<"module->info free success"<<std::endl;
+    // std::cout<<"module->info free success"<<'\n';
     // module->serial->stop();
-    // std::cout<<"module->serial->stop() success"<<std::endl;
+    // std::cout<<"module->serial->stop() success"<<'\n';
     // uhf_serial_free(module->serial);
     free(module);
-    // std::cout<<"free(module) success"<<std::endl;
+    // std::cout<<"free(module) success"<<'\n';
 }
 
 uint8_t checksum(const uint8_t* data, size_t length) {
@@ -384,7 +384,7 @@ M100ResponseType m100_single_poll(M100Module* module, UHFTag* uhf_tag) {
     uhf_tag_set_epc_pc(uhf_tag, pc);
     uhf_tag_set_epc_crc(uhf_tag, crc);
     uhf_tag_set_epc(uhf_tag, data + 8, epc_len);
-    // std::cout<<"M100 Single Poll function completed"<<std::endl;
+    // std::cout<<"M100 Single Poll function completed"<<'\n';
     return M100SuccessResponse;
 }
 
@@ -398,17 +398,17 @@ M100ResponseType m100_multi_poll(M100Module* module)
          printf("setup_and_send_rx failed\n");
         return rp_type;
     }
-    std::cout<<"Completed setup and send rx multiple"<<std::endl;
+    std::cout<<"Completed setup and send rx multiple"<<'\n';
     module->tag_no = 0;
     for(int check=0;check<5;check++)
     {
         if(module->serial->multi_buffer_[check].loaded)
         {
             module->tag_no += 1;
-            std::cout<<"multi_buffer_["<<check<<"]->loaded is TRUE"<<std::endl;
+            std::cout<<"multi_buffer_["<<check<<"]->loaded is TRUE"<<'\n';
         }
     }
-    std::cout<<"m100 multi poll complete"<<std::endl;
+    std::cout<<"m100 multi poll complete"<<'\n';
     return M100SuccessResponse;
 }
 
@@ -423,9 +423,9 @@ M100ResponseType multi_poll_tag_alloc(M100Module* module, UHFTag** uhf_tag)
             // uint8_t* data;
             std::vector<uint8_t> data;
             data.resize(module->serial->multi_buffer_[check].vec_data.size());
-            std::cout<<"Starting Copy"<<std::endl;
+            std::cout<<"Starting Copy"<<'\n';
             std::copy(module->serial->multi_buffer_[check].vec_data.begin(),module->serial->multi_buffer_[check].vec_data.end(),data.begin());
-            std::cout<<"Copying complete from multi_buffer_["<<check<<"] to temporary data buffer"<<std::endl;
+            std::cout<<"Copying complete from multi_buffer_["<<check<<"] to temporary data buffer"<<'\n';
             uint16_t pc = static_cast<uint16_t>(data[6]);
             uint16_t crc = 0;
 
@@ -447,15 +447,15 @@ M100ResponseType multi_poll_tag_alloc(M100Module* module, UHFTag** uhf_tag)
             if(crc16_genibus(data.data() + 6, epc_len + 2) != crc) return M100ValidationFail;
             uhf_tag[tag]->epc->pc = pc;
             uhf_tag[tag]->epc->crc = crc;
-            std::cout<<"Starting memcpy from temp data buffer to uhf_tag["<<tag<<"]->epc->data"<<std::endl;
+            std::cout<<"Starting memcpy from temp data buffer to uhf_tag["<<tag<<"]->epc->data"<<'\n';
             std::memcpy(uhf_tag[tag]->epc->data,data.data() + 8,epc_len);
-            std::cout<<"memcpy completed successfully"<<std::endl;
+            std::cout<<"memcpy completed successfully"<<'\n';
             uhf_tag[tag]->epc->size = epc_len; 
             tag++; 
         }
         else
         {
-            std::cout<<"multi_buffer_["<<check<<"]->loaded is False"<<std::endl;
+            std::cout<<"multi_buffer_["<<check<<"]->loaded is False"<<'\n';
         }
     }
 
@@ -464,17 +464,17 @@ M100ResponseType multi_poll_tag_alloc(M100Module* module, UHFTag** uhf_tag)
 
 M100ResponseType m100_stop_multi_poll(M100Module* module)
 {
-    std::cout<<"Starting m100_stop_multi_poll"<<std::endl;
+    std::cout<<"Starting m100_stop_multi_poll"<<'\n';
     module->serial->buffer_->multi = true;
     M100ResponseType rp_type =
         setup_and_send_rx(module, (uint8_t*)&CMD_STOP_MULTIPLE_POLLING.cmd[0], CMD_STOP_MULTIPLE_POLLING.length);
     if(rp_type != M100SuccessResponse) 
     {
-        std::cout<<"setup_and_send_rx failed"<<std::endl;
+        std::cout<<"setup_and_send_rx failed"<<'\n';
         return rp_type;
     }
 
-    std::cout<<"STOP SUCCESSFULL"<<std::endl;
+    std::cout<<"STOP SUCCESSFULL"<<'\n';
     // uint8_t* data = module->serial->buffer_->data;
     // size_t length = sizeof(data);
     // printf("stop multi_poll response: ");
@@ -618,7 +618,7 @@ M100ResponseType m100_read_label_data_storage(
         // uhf_tag_set_user(uhf_tag, data + ptr_offset, bank_data_length);
         uhf_tag_set_user(uhf_tag, read_data, bank_data_length);
     }
-    std::cout<<"Received Tag Data size: "<<bank_data_length<<std::endl;
+    std::cout<<"Received Tag Data size: "<<bank_data_length<<'\n';
 
     return M100SuccessResponse;
 }

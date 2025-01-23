@@ -267,8 +267,8 @@ private:
                     epc = option.value();
                     // assert(epc != nullptr);
                     // assert(epc_size != nullptr);  
-                    std::cout<<"multi_poll completed successfully"<<std::endl;
-                    std::cout<<"result size: "<<epc.size()<<std::endl;
+                    std::cout<<"multi_poll completed successfully"<<'\n';
+                    std::cout<<"result size: "<<epc.size()<<'\n';
                     result->multi_epc_size = static_cast<int>(epc.size());
                     std::copy(epc.begin(), epc.end(),result->multi_inventory_epc.begin());
                     result->response = true;
@@ -278,7 +278,7 @@ private:
                 }
                 catch(const std::bad_optional_access& e)
                 {
-                    std::cerr <<"multi_poll failed with error: "<<e.what()<<std::endl;
+                    std::cerr <<"multi_poll failed with error: "<<e.what()<<'\n';
                     throw;
                 }
             }

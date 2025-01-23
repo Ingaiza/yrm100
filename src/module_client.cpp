@@ -14,32 +14,6 @@ using namespace std::placeholders;
 
 std::string epc_file_name;
 
-
-// std::string epc_name()
-// {
-//     std::string basePath = "/home/ingaiza/aimbot_inventory/epc_inventory";
-//     std::string name;
-//     int j = 0;
-//     bool check = true;
-
-//     while(check) 
-//     {
-//         std::cout << "J value: " << j << "\n";
-        
-//         name = basePath + std::to_string(j) + ".txt";
-//         std::cout << "Checking file: " << name << "\n";
-        
-//         if(std::filesystem::exists(name)) {
-//             std::cout << "File exists\n";
-//             j++;
-//         } else {
-//             std::cout << "File doesn't exist\n";
-//             check = false;
-//         }
-//     }
-//     return name;
-// }
-
 void create_epc_file()
 {
     // epc_file_name = epc_name();
@@ -149,6 +123,7 @@ public:
                     << static_cast<int>(write_data[i])
                     << " ";
         }
+        std::cout<< std::dec<<'\n';
         // Send goal
         RCLCPP_INFO(this->get_logger(), "Sending Goal");
         module_client->async_send_goal(goal, options);
@@ -233,7 +208,7 @@ private:
             RCLCPP_WARN(this->get_logger(), "Goal Canceled");
         }
 
-        std::cout<<command<<std::endl;
+        std::cout<<command<<'\n';
         
         if(command == "read")
         {   
@@ -255,12 +230,12 @@ private:
                 }
                 catch(const std::exception& e)
                 {
-                    std::cout<<e.what()<<std::endl;
+                    std::cout<<e.what()<<'\n';
                 }
 
-                std::cout<<"Copy Success"<<std::endl;
+                std::cout<<"Copy Success"<<'\n';
 
-                std::cout<<"READ TAG EPC: "<<std::endl;
+                std::cout<<"READ TAG EPC: "<<'\n';
 
                 for(size_t i = 0; i < epc_size; i++) 
                 {
@@ -271,9 +246,9 @@ private:
                             << static_cast<int>(read_epc[i])  
                             << " ";                                                                                                                                                                                                   // Space between bytes
                 }
-                std::cout<<std::dec<<std::endl;
+                std::cout<<std::dec<<'\n';
 
-                std::cout<<"READ DATA: "<<std::endl;
+                std::cout<<"READ DATA: "<<'\n';
 
                 for(size_t i = 0; i < data_size; i++) 
                 {
@@ -284,7 +259,7 @@ private:
                             << static_cast<int>(read_data[i])  
                             << " ";                                                                                                                                                                                                   // Space between bytes
                 }
-                std::cout << std::dec << std::endl;
+                std::cout << std::dec << '\n';
                 read_inventory();
                 goal_complete = true;
                 goal_response = true;
@@ -307,10 +282,10 @@ private:
                 }
                 catch(const std::exception& e)
                 {
-                    std::cout<< e.what() <<std::endl;
+                    std::cout<< e.what() <<'\n';
                 }
                 
-                 std::cout<<"WRITE TAG EPC: "<<std::endl;
+                 std::cout<<"WRITE TAG EPC: "<<'\n';
 
                 for(size_t i = 0; i < epc_size; i++) 
                 {
@@ -321,7 +296,7 @@ private:
                             << static_cast<int>(write_epc[i])  
                             << " ";                                                                                                                                                                                                   // Space between bytes
                 }
-                std::cout<<std::dec<<std::endl;
+                std::cout<<std::dec<<'\n';
                 write_inventory();
                 goal_complete = true;
                 goal_response = true;
@@ -343,12 +318,12 @@ private:
                 }
                 catch(const std::exception& e)
                 {
-                    std::cout<< e.what() <<std::endl;
+                    std::cout<< e.what() <<'\n';
                 }
 
-                std::cout<<"Copy Success"<<std::endl;
+                std::cout<<"Copy Success"<<'\n';
 
-                std::cout<<"SINGLE POLL EPC: "<<std::endl;
+                std::cout<<"SINGLE POLL EPC: "<<'\n';
     
                 for(size_t i = 0; i < epc_size; i++) 
                 {
@@ -359,7 +334,7 @@ private:
                             << static_cast<int>(single_epc[i])  // Cast to int for proper display
                             << " ";                                                                                                                                                                                                   // Space between bytes
                 }
-                std::cout << std::dec << std::endl;
+                std::cout << std::dec << '\n';
                 epc_inventory(single_epc);
                 goal_complete = true;
                 goal_response = true;  
@@ -384,22 +359,22 @@ private:
                     // std::copy_n(epc.begin(),std::min(epc.size(), sizeof(epc_data)),epc_data);
                     if(epc.size() == 0)
                     {
-                        std::cout<<"epc.size() is 0"<<std::endl;
+                        std::cout<<"epc.size() is 0"<<'\n';
                     }
                     epc_size = result.result->multi_epc_size;                
                     multi_epc.resize(epc_size);
                     assert(epc.begin() != nullptr);
-                    std::cout<<"epc.begin() assertion passed"<<std::endl;
+                    std::cout<<"epc.begin() assertion passed"<<'\n';
                     std::copy_n(epc.begin(),std::min(epc.size(),multi_epc.size()),multi_epc.begin());
                 }
                 catch(const std::exception& e)
                 {
-                    std::cout<< e.what() <<std::endl;
+                    std::cout<< e.what() <<'\n';
                 }
 
-                std::cout<<"Copy Success"<<std::endl;
+                std::cout<<"Copy Success"<<'\n';
 
-                std::cout<<"MULTI POLL EPC's: "<<std::endl;
+                std::cout<<"MULTI POLL EPC's: "<<'\n';
     
                 for(size_t i = 0; i < epc_size; i++) 
                 {
@@ -410,7 +385,7 @@ private:
                             << static_cast<int>(multi_epc[i]) // Cast to int for proper display
                             << " ";                                                                                                                                                                                                   // Space between bytes
                 }
-                std::cout << std::dec << std::endl;
+                std::cout << std::dec << '\n';
                 epc_inventory(multi_epc);
                 goal_complete = true;
                 goal_response = true; 

@@ -536,7 +536,7 @@ public:
             }
             catch (const std::exception& e) 
             {
-                std::cerr << "Conversion error at index " << i << ": " << e.what() << std::endl;
+                std::cerr << "Conversion error at index " << i << ": " << e.what() << '\n';
                 break;
             }
         }
