@@ -599,6 +599,8 @@ private:
         std::cout<<"Status: "<<(status.inStock ? "In Stock" : (status.reserved ? "Reserved" : (status.damaged ? "Damaged" : (status.expired ? "Expired" : "INVALID STATUS"))))<<"\n";
 
         auto chunks = HexChunkProcessor::processHexChunksNonDestructive(read_epc);
+        std::time_t ty = time(0);
+        std::tm* local = std::localtime(&ty);
 
         if(readfile.is_open())
         {
@@ -606,9 +608,9 @@ private:
             readfile << "  \n";
             for(size_t i = 0; i < chunks.size(); ++i)
             {   
-                readfile <<"READ FROM TAG EPC: "<<chunks[i]<<"  | TIMESTAMP: "<<now->tm_mday<<"/"
-                            <<now->tm_mon+1<<"/"<<now->tm_year+1900<<" "<<now->tm_hour<<":"
-                            <<now->tm_min<<":"<<now->tm_sec<<"\n";
+                readfile <<"READ FROM TAG EPC: "<<chunks[i]<<"  | TIMESTAMP: "<<local->tm_mday<<"/"
+                            <<local->tm_mon+1<<"/"<<local->tm_year+1900<<" "<<local->tm_hour<<":"
+                            <<local->tm_min<<":"<<local->tm_sec<<"\n";
                 readfile <<" \n";
             }
             readfile << "PRODUCT PARAMETERS\n";
@@ -671,6 +673,8 @@ private:
 
 
         auto chunks = HexChunkProcessor::processHexChunksNonDestructive(write_epc);
+        std::time_t ty = time(0);
+        std::tm* local = std::localtime(&ty);
    
         if(writefile.is_open())
         {
@@ -678,13 +682,13 @@ private:
             writefile << "  \n";
             for(size_t i = 0; i < chunks.size(); ++i)
             {   
-                writefile <<"WRITTEN TO TAG EPC: "<<chunks[i]<<"  | TIMESTAMP: "<<now->tm_mday<<"/"
-                            <<now->tm_mon+1<<"/"<<now->tm_year+1900<<" "<<now->tm_hour<<":"
-                            <<now->tm_min<<":"<<now->tm_sec;
+                writefile <<"WRITTEN TO TAG EPC: "<<chunks[i]<<"  | TIMESTAMP: "<<local->tm_mday<<"/"
+                            <<local->tm_mon+1<<"/"<<local->tm_year+1900<<" "<<local->tm_hour<<":"
+                            <<local->tm_min<<":"<<local->tm_sec;
             }
-            writefile << "  \n";
-            writefile << "Inventory Timestamp: "<<now->tm_mday<<"/"<<now->tm_mon+1<<"/"<<now->tm_year+1900<<" "
-                      <<now->tm_hour<<":"<<now->tm_min<<":"<<now->tm_sec<<"\n";
+            // writefile << "  \n";
+            // writefile << "Inventory Timestamp: "<<now->tm_mday<<"/"<<now->tm_mon+1<<"/"<<now->tm_year+1900<<" "
+            //           <<now->tm_hour<<":"<<now->tm_min<<":"<<now->tm_sec<<"\n";
             writefile << "  \n";
             writefile << "PRODUCT PARAMETERS\n";
             writefile << "  \n";
