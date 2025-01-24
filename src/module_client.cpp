@@ -680,7 +680,7 @@ private:
             {   
                 writefile <<"WRITTEN TO TAG EPC: "<<chunks[i]<<"  | TIMESTAMP: "<<now->tm_mday<<"/"
                             <<now->tm_mon+1<<"/"<<now->tm_year+1900<<" "<<now->tm_hour<<":"
-                            <<now->tm_min<<":"<<now->tm_sec<<"\n";
+                            <<now->tm_min<<":"<<now->tm_sec;
             }
             writefile << "  \n";
             writefile << "Inventory Timestamp: "<<now->tm_mday<<"/"<<now->tm_mon+1<<"/"<<now->tm_year+1900<<" "
